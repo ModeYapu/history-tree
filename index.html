@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌳 历史之树 - Tree of History</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/tree.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="logo">🌳</span>
+            <span class="title">历史之树</span>
+        </div>
+        <div class="nav-search">
+            <input type="text" id="searchInput" placeholder="搜索历史事件或人物...">
+            <button id="searchBtn">🔍</button>
+        </div>
+        <div class="nav-controls">
+            <button id="viewModeBtn" class="control-btn" onclick="toggleViewMode()">视图模式</button>
+            <button id="filterBtn" class="control-btn">筛选</button>
+            <button id="settingsBtn" class="control-btn">⚙️</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div id="mainContainer">
+        <!-- 树形可视化容器 -->
+        <svg id="treeSvg"></svg>
+        
+        <!-- 详情卡片 -->
+        <div id="detailCard" class="detail-card hidden">
+            <button class="close-btn" onclick="closeDetail()">×</button>
+            <div class="card-content">
+                <div class="card-image"></div>
+                <h2 class="card-title"></h2>
+                <p class="card-year"></p>
+                <div class="card-divider"></div>
+                <p class="card-description"></p>
+                <div class="card-tags"></div>
+                <div class="card-importance"></div>
+                <div class="card-actions">
+                    <button class="action-btn">查看详情</button>
+                    <button class="action-btn">相关链接</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 时间轴控制器 -->
+    <div class="timeline-control">
+        <div class="timeline-labels">
+            <span>公元前3000年</span>
+            <span>公元前500年</span>
+            <span>公元500年</span>
+            <span>1500年</span>
+            <span>1900年</span>
+            <span>现代</span>
+        </div>
+        <input type="range" id="timeSlider" min="0" max="100" value="50">
+    </div>
+
+    <!-- 筛选面板 -->
+    <div id="filterPanel" class="filter-panel hidden">
+        <h3>筛选条件</h3>
+        <div class="filter-group">
+            <label>时期</label>
+            <select id="periodFilter">
+                <option value="all">全部</option>
+                <option value="ancient">远古时代</option>
+                <option value="classical">古代</option>
+                <option value="medieval">中世纪</option>
+                <option value="modern">近代</option>
+                <option value="contemporary">现代</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>类型</label>
+            <select id="typeFilter">
+                <option value="all">全部</option>
+                <option value="event">事件</option>
+                <option value="person">人物</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>领域</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="politics" checked> 政治</label>
+                <label><input type="checkbox" value="technology" checked> 科技</label>
+                <label><input type="checkbox" value="culture" checked> 文化</label>
+                <label><input type="checkbox" value="economy" checked> 经济</label>
+                <label><input type="checkbox" value="military" checked> 军事</label>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label>重要程度</label>
+            <input type="range" id="importanceFilter" min="1" max="5" value="1">
+        </div>
+        <button id="applyFilter" class="apply-btn">应用筛选</button>
+    </div>
+
+    <!-- 图例 -->
+    <div class="legend">
+        <h4>图例</h4>
+        <div class="legend-item">
+            <span class="legend-color politics"></span>
+            <span>政治</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color technology"></span>
+            <span>科技</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color culture"></span>
+            <span>文化</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color economy"></span>
+            <span>经济</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-color military"></span>
+            <span>军事</span>
+        </div>
+    </div>
+
+    <!-- 统计信息 -->
+    <div class="stats">
+        <div class="stat-item">
+            <span class="stat-number" id="totalNodes">0</span>
+            <span class="stat-label">历史节点</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="totalPersons">0</span>
+            <span class="stat-label">历史人物</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="totalEvents">0</span>
+            <span class="stat-label">历史事件</span>
+        </div>
+    </div>
+
+    <!-- 加载提示 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-tree">🌳</div>
+            <p>正在生长历史之树...</p>
+        </div>
+    </div>
+
+    <!-- 扩展功能按钮 -->
+    <div class="extension-buttons">
+        <button class="ext-btn" onclick="showMapPanel()" title="地图视图">🗺️</button>
+        <button class="ext-btn" onclick="showRelationPanel(historyData)" title="关系网络">🔗</button>
+        <button class="ext-btn" onclick="showExportPanel()" title="导出">📥</button>
+        <button class="ext-btn" onclick="toggleFullscreen()" title="全屏">⛶</button>
+    </div>
+
+    <!-- 脚本 -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="js/data-extended.js"></script>
+    <script src="js/tree.js"></script>
+    <script src="js/interactions.js"></script>
+    <script src="js/images.js"></script>
+    <script src="js/relations.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
