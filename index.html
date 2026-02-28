@@ -3,385 +3,528 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌳 历史之树 - Tree of History</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/tree.css">
-    <link rel="stylesheet" href="css/animations.css">
+    <title>🌳 历史之树 - AI驱动的历史发现引擎</title>
+    
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            overflow: hidden;
+        }
+        
+        #app {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* 顶部导航 */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .logo-icon {
+            font-size: 28px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-left: 30px;
+        }
+        
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+        
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+        
+        .status-bar {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* 主视图容器 */
+        .main-view {
+            margin-top: 60px;
+            height: calc(100vh - 60px);
+            position: relative;
+        }
+        
+        /* 加载动画 */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-tree {
+            font-size: 80px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .loading-text {
+            margin-top: 30px;
+            font-size: 18px;
+            color: #667eea;
+        }
+        
+        .loading-progress {
+            margin-top: 20px;
+            width: 200px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            animation: loading 2s ease-in-out;
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 0 10px;
+            }
+            
+            .nav-buttons {
+                margin-left: 10px;
+            }
+            
+            .nav-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .status-bar {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="logo">🌳</span>
-            <span class="title">历史之树</span>
+    <!-- 加载屏幕 -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-tree">🌳</div>
+        <div class="loading-text">历史之树正在生长...</div>
+        <div class="loading-progress">
+            <div class="loading-bar"></div>
         </div>
-        <div class="nav-search">
-            <input type="text" id="searchInput" placeholder="搜索历史事件或人物...">
-            <button id="searchBtn">🔍</button>
-        </div>
-        <div class="nav-controls">
-            <button id="viewModeBtn" class="control-btn" onclick="toggleViewMode()">视图模式</button>
-            <button id="filterBtn" class="control-btn">筛选</button>
-            <button id="settingsBtn" class="control-btn">⚙️</button>
-        </div>
-    </nav>
-
-    <!-- 主容器 -->
-    <div id="mainContainer">
-        <!-- 树形可视化容器 -->
-        <svg id="treeSvg"></svg>
-        
-        <!-- 详情卡片 -->
-        <div id="detailCard" class="detail-card hidden">
-            <button class="close-btn" onclick="closeDetail()">×</button>
-            <div class="card-content">
-                <div class="card-image"></div>
-                <h2 class="card-title"></h2>
-                <p class="card-year"></p>
-                <div class="card-divider"></div>
-                <p class="card-description"></p>
-                <div class="card-tags"></div>
-                <div class="card-importance"></div>
-                <div class="card-actions">
-                    <button class="action-btn">查看详情</button>
-                    <button class="action-btn">相关链接</button>
+    </div>
+    
+    <!-- 主应用 -->
+    <div id="app">
+        <!-- 顶部导航 -->
+        <div class="top-nav">
+            <div class="logo">
+                <span class="logo-icon">🌳</span>
+                <span>历史之树</span>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="nav-btn active" data-view="tree3d">🌲 3D树</button>
+                <button class="nav-btn" data-view="timeline">⏱️ 时间轴</button>
+                <button class="nav-btn" data-view="network">🕸️ 网络</button>
+                <button class="nav-btn" data-view="map">🗺️ 地图</button>
+                <button class="nav-btn" data-view="cards">🎴 卡片</button>
+            </div>
+            
+            <div class="status-bar">
+                <div class="status-item">
+                    <span>📊</span>
+                    <span id="nodeCount">0</span> 节点
+                </div>
+                <div class="status-item">
+                    <span>⚡</span>
+                    <span id="fpsCounter">60</span> FPS
+                </div>
+                <div class="status-item">
+                    <span>💾</span>
+                    <span id="memoryUsage">0</span> MB
                 </div>
             </div>
         </div>
+        
+        <!-- 主视图容器 -->
+        <div class="main-view" id="mainView"></div>
     </div>
-
-    <!-- 时间轴控制器 -->
-    <div class="timeline-control">
-        <div class="timeline-labels">
-            <span>公元前3000年</span>
-            <span>公元前500年</span>
-            <span>公元500年</span>
-            <span>1500年</span>
-            <span>1900年</span>
-            <span>现代</span>
-        </div>
-        <input type="range" id="timeSlider" min="0" max="100" value="50">
-    </div>
-
-    <!-- 筛选面板 -->
-    <div id="filterPanel" class="filter-panel hidden">
-        <h3>筛选条件</h3>
-        <div class="filter-group">
-            <label>时期</label>
-            <select id="periodFilter">
-                <option value="all">全部</option>
-                <option value="ancient">远古时代</option>
-                <option value="classical">古代</option>
-                <option value="medieval">中世纪</option>
-                <option value="modern">近代</option>
-                <option value="contemporary">现代</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>类型</label>
-            <select id="typeFilter">
-                <option value="all">全部</option>
-                <option value="event">事件</option>
-                <option value="person">人物</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>领域</label>
-            <div class="checkbox-group">
-                <label><input type="checkbox" value="politics" checked> 政治</label>
-                <label><input type="checkbox" value="technology" checked> 科技</label>
-                <label><input type="checkbox" value="culture" checked> 文化</label>
-                <label><input type="checkbox" value="economy" checked> 经济</label>
-                <label><input type="checkbox" value="military" checked> 军事</label>
-            </div>
-        </div>
-        <div class="filter-group">
-            <label>重要程度</label>
-            <input type="range" id="importanceFilter" min="1" max="5" value="1">
-        </div>
-        <button id="applyFilter" class="apply-btn">应用筛选</button>
-    </div>
-
-    <!-- 图例 -->
-    <div class="legend">
-        <h4>图例</h4>
-        <div class="legend-item">
-            <span class="legend-color politics"></span>
-            <span>政治</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-color technology"></span>
-            <span>科技</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-color culture"></span>
-            <span>文化</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-color economy"></span>
-            <span>经济</span>
-        </div>
-        <div class="legend-item">
-            <span class="legend-color military"></span>
-            <span>军事</span>
-        </div>
-    </div>
-
-    <!-- 统计信息 -->
-    <div class="stats">
-        <div class="stat-item">
-            <span class="stat-number" id="totalNodes">0</span>
-            <span class="stat-label">历史节点</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-number" id="totalPersons">0</span>
-            <span class="stat-label">历史人物</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-number" id="totalEvents">0</span>
-            <span class="stat-label">历史事件</span>
-        </div>
-    </div>
-
-    <!-- 加载提示 -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loading-content">
-            <div class="loading-tree">🌳</div>
-            <p>正在生长历史之树...</p>
-        </div>
-    </div>
-
-    <!-- 扩展功能按钮 -->
-    <div class="extension-buttons">
-        <button class="ext-btn" onclick="showMapPanel()" title="地图视图">🗺️</button>
-        <button class="ext-btn" onclick="showRelationPanel(historyData)" title="关系网络">🔗</button>
-        <button class="ext-btn" onclick="showExportPanel()" title="导出">📥</button>
-        <button class="ext-btn" onclick="toggleFullscreen()" title="全屏">⛶</button>
-    </div>
-
-    <!-- 脚本 -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="js/data-extended.js"></script>
-    <script src="js/tree.js"></script>
-    <script src="js/interactions.js"></script>
-    <script src="js/images.js"></script>
-    <script src="js/relations.js"></script>
-    <script src="js/map.js"></script>
-    <script src="js/export.js"></script>
-    <script src="js/app.js"></script>
+    
+    <!-- 核心脚本 -->
+    <script src="src/core/EventBus.js"></script>
+    <script src="src/core/StateManager.js"></script>
+    <script src="src/core/Router.js"></script>
+    <script src="src/core/App.js"></script>
+    
+    <!-- 数据层 -->
+    <script src="src/models/HistoryNode.js"></script>
+    <script src="src/services/DataService.js"></script>
+    <script src="src/services/AIConnectionEngine.js"></script>
+    <script src="src/services/EnhancedAIEngine.js"></script>
+    
+    <!-- 视图层 -->
+    <script src="src/views/TreeView.js"></script>
+    <script src="src/views/TimelineView.js"></script>
+    <script src="src/views/NetworkView.js"></script>
+    <script src="src/views/MapView.js"></script>
+    <script src="src/views/CardView.js"></script>
+    <script src="src/views/HistoryTree3D.js"></script>
+    <script src="src/views/EnhancedNetworkView.js"></script>
+    
+    <!-- 组件层 -->
+    <script src="src/components/NodeCard.js"></script>
+    <script src="src/components/SearchBar.js"></script>
+    <script src="src/components/FilterPanel.js"></script>
+    <script src="src/components/AIChat.js"></script>
+    <script src="src/components/PhilosophyUI.js"></script>
+    
+    <!-- 插件 -->
+    <script src="src/plugins/ExportPlugin.js"></script>
+    <script src="src/plugins/AnalyticsPlugin.js"></script>
+    <script src="src/plugins/EducationPlugin.js"></script>
+    
+    <!-- 工具 -->
+    <script src="src/utils/PerformanceOptimizer.js"></script>
+    
+    <!-- 数据 -->
+    <script src="data/historical-dataset.js"></script>
+    
+    <!-- 主入口 -->
+    <script src="src/main.js"></script>
+    
+    <script>
+        // 应用初始化
+        let app;
+        
+        async function initApplication() {
+            console.log('🌳 历史之树 v4.4 初始化中...');
+            
+            try {
+                // 创建应用实例
+                app = new HistoryTreeApp({
+                    container: '#mainView',
+                    dataPath: './data'
+                });
+                
+                // 暴露到全局（调试用）
+                window.app = app;
+                
+                // 等待应用初始化完成
+                await new Promise((resolve) => {
+                    app.eventBus.on('app:ready', resolve);
+                });
+                
+                // 加载数据集
+                await loadHistoricalData();
+                
+                // 初始化UI
+                initUI();
+                
+                // 初始化性能监控
+                initPerformanceMonitor();
+                
+                // 隐藏加载屏幕
+                hideLoadingScreen();
+                
+                // 显示欢迎信息
+                showWelcome();
+                
+                console.log('✅ 应用初始化完成');
+                
+            } catch (error) {
+                console.error('❌ 应用初始化失败:', error);
+                showError(error);
+            }
+        }
+        
+        // 加载历史数据
+        async function loadHistoricalData() {
+            console.log('📚 加载历史数据...');
+            
+            const dataset = HistoricalDataset;
+            let count = 0;
+            
+            // 加载各个时期的数据
+            for (const period of Object.keys(dataset)) {
+                const periodData = dataset[period];
+                
+                // 加载事件
+                if (periodData.events) {
+                    periodData.events.forEach(event => {
+                        const node = new HistoryNode(event);
+                        app.dataService.nodes.set(node.id, node);
+                        app.dataService.indexNode(node);
+                        count++;
+                    });
+                }
+                
+                // 加载人物
+                if (periodData.persons) {
+                    periodData.persons.forEach(person => {
+                        const node = new HistoryNode(person);
+                        app.dataService.nodes.set(node.id, node);
+                        app.dataService.indexNode(node);
+                        count++;
+                    });
+                }
+            }
+            
+            // 更新统计
+            app.dataService.stats.totalNodes = count;
+            
+            // 更新UI
+            document.getElementById('nodeCount').textContent = count;
+            
+            console.log(`✅ 加载了 ${count} 个历史节点`);
+        }
+        
+        // 初始化UI
+        function initUI() {
+            // 导航按钮
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const view = btn.dataset.view;
+                    switchView(view);
+                    
+                    // 更新按钮状态
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+            
+            // 初始化组件
+            app.getComponent('searchBar');
+            app.getComponent('filterPanel');
+            app.getComponent('aiChat');
+            app.getComponent('nodeCard');
+            app.getComponent('philosophyUI');
+            
+            // 显示默认视图
+            app.showView('tree3d');
+        }
+        
+        // 切换视图
+        function switchView(viewName) {
+            app.showView(viewName);
+        }
+        
+        // 初始化性能监控
+        function initPerformanceMonitor() {
+            const optimizer = new PerformanceOptimizer(app);
+            window.performanceOptimizer = optimizer;
+            
+            // 定期更新状态栏
+            setInterval(() => {
+                const report = optimizer.getPerformanceReport();
+                
+                document.getElementById('fpsCounter').textContent = report.metrics.fps;
+                document.getElementById('memoryUsage').textContent = report.metrics.memory.toFixed(0);
+            }, 1000);
+        }
+        
+        // 隐藏加载屏幕
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.style.opacity = '0';
+            loadingScreen.style.transition = 'opacity 0.5s';
+            
+            setTimeout(() => {
+                loadingScreen.remove();
+            }, 500);
+        }
+        
+        // 显示欢迎信息
+        function showWelcome() {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: rgba(26, 26, 46, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 20px;
+                border-radius: 12px;
+                border: 1px solid rgba(102, 126, 234, 0.3);
+                max-width: 350px;
+                z-index: 1000;
+                animation: slideIn 0.5s ease;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <span style="font-size: 32px; margin-right: 10px;">🌳</span>
+                    <div>
+                        <div style="font-weight: bold; font-size: 16px;">欢迎使用历史之树 v4.4</div>
+                        <div style="font-size: 12px; color: #888;">AI驱动的历史发现引擎</div>
+                    </div>
+                </div>
+                
+                <div style="font-size: 13px; color: #aaa; line-height: 1.6; margin-bottom: 15px;">
+                    探索历史之树，发现隐藏的历史关联，进行深度的哲学思辨。
+                </div>
+                
+                <div style="font-size: 12px; color: #667eea; margin-bottom: 15px;">
+                    <div style="margin-bottom: 5px;">✨ 核心功能：</div>
+                    <div>• 🌲 3D漂浮的历史之树</div>
+                    <div>• 🤖 AI哲学思辨引擎</div>
+                    <div>• 🔍 智能关联发现</div>
+                    <div>• 💭 多维度历史分析</div>
+                </div>
+                
+                <div style="font-size: 11px; color: #888; margin-bottom: 15px;">
+                    快捷键：Ctrl+1-5 切换视图 | Ctrl+K 搜索 | Ctrl+E 导出
+                </div>
+                
+                <button onclick="this.parentElement.remove()" style="
+                    width: 100%;
+                    padding: 10px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: bold;
+                ">开始探索历史之树</button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 5秒后自动关闭
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.opacity = '0';
+                    notification.style.transition = 'opacity 0.5s';
+                    setTimeout(() => notification.remove(), 500);
+                }
+            }, 10000);
+        }
+        
+        // 显示错误
+        function showError(error) {
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+                <div style="font-size: 18px; color: #ff6b6b; margin-bottom: 10px;">初始化失败</div>
+                <div style="font-size: 14px; color: #aaa; max-width: 400px; text-align: center;">
+                    ${error.message}
+                </div>
+                <button onclick="location.reload()" style="
+                    margin-top: 20px;
+                    padding: 10px 30px;
+                    background: #667eea;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                ">重新加载</button>
+            `;
+        }
+        
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 页面加载完成后初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApplication);
+        } else {
+            initApplication();
+        }
+    </script>
 </body>
 </html>
-
-<!-- 新增功能模块 -->
-<script src="js/timeline.js"></script>
-<script src="js/network.js"></script>
-<script src="js/ai-assistant.js"></script>
-
-<!-- AI助手面板 -->
-<div id="aiAssistantPanel" class="ai-panel hidden">
-    <div class="ai-header">
-        <h3>🤖 历史AI助手</h3>
-        <button class="close-btn" onclick="toggleAIPanel()">×</button>
-    </div>
-    <div class="ai-content">
-        <div class="ai-chat">
-            <div id="aiMessages" class="ai-messages"></div>
-            <div class="ai-input-group">
-                <input type="text" id="aiInput" placeholder="问我任何历史问题..." />
-                <button onclick="sendAIMessage()">发送</button>
-            </div>
-        </div>
-        <div class="ai-recommendations">
-            <h4>为你推荐</h4>
-            <div id="aiRecommendations"></div>
-        </div>
-    </div>
-</div>
-
-<!-- 关系网络视图 -->
-<div id="networkModal" class="modal hidden">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>🔗 历史关系网络</h2>
-            <button class="close-btn" onclick="closeNetworkModal()">×</button>
-        </div>
-        <div id="networkContainer" class="network-container"></div>
-        <div class="network-legend">
-            <div class="legend-item">
-                <span style="color: #22c55e;">→</span> 解决
-            </div>
-            <div class="legend-item">
-                <span style="color: #3b82f6;">→</span> 影响
-            </div>
-            <div class="legend-item">
-                <span style="color: #9ca3af;">→</span> 相关
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 增强时间轴 -->
-<div id="enhancedTimeline" class="enhanced-timeline"></div>
-
-<style>
-/* AI助手面板样式 */
-.ai-panel {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    width: 350px;
-    height: 500px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-}
-
-.ai-panel.hidden {
-    display: none;
-}
-
-.ai-header {
-    padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 12px 12px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.ai-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.ai-chat {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 15px;
-}
-
-.ai-messages {
-    flex: 1;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #f5f5f5;
-    border-radius: 8px;
-}
-
-.ai-input-group {
-    display: flex;
-    gap: 10px;
-}
-
-.ai-input-group input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-
-.ai-input-group button {
-    padding: 10px 20px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.ai-recommendations {
-    padding: 15px;
-    border-top: 1px solid #eee;
-}
-
-.ai-recommendations h4 {
-    margin: 0 0 10px 0;
-    font-size: 14px;
-    color: #666;
-}
-
-/* 关系网络样式 */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 2000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal.hidden {
-    display: none;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 1000px;
-    height: 80vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-header {
-    padding: 20px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.network-container {
-    flex: 1;
-    position: relative;
-}
-
-.network-legend {
-    padding: 15px;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    border-top: 1px solid #eee;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 14px;
-}
-
-/* 增强时间轴样式 */
-.enhanced-timeline {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    margin: 20px 0;
-}
-
-.timeline-navigator .period-rect {
-    transition: all 0.3s ease;
-}
-
-.timeline-navigator .event-marker {
-    transition: all 0.2s ease;
-}
-
-.timeline-navigator .event-marker:hover {
-    r: 8;
-}
-</style>
