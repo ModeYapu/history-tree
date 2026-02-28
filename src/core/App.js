@@ -17,6 +17,7 @@ class HistoryTreeApp {
         this.stateManager = null;
         this.router = null;
         this.dataService = null;
+        this.modelManager = null;
         
         // 视图管理
         this.views = new Map();
@@ -45,7 +46,13 @@ class HistoryTreeApp {
             this.router = new Router(this.eventBus);
             this.dataService = new DataService(this.eventBus);
             
-            // 2. 加载数据
+            // 2. 初始化多模型管理器
+            if (typeof MultiModelManager !== 'undefined') {
+                this.modelManager = new MultiModelManager(this);
+                console.log('✅ 多模型管理器初始化完成');
+            }
+            
+            // 3. 加载数据
             await this.loadData();
             
             // 3. 初始化视图

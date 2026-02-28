@@ -210,6 +210,7 @@
                 <button class="nav-btn" data-view="network">🕸️ 网络</button>
                 <button class="nav-btn" data-view="map">🗺️ 地图</button>
                 <button class="nav-btn" data-view="cards">🎴 卡片</button>
+                <button class="nav-btn" id="modelSelectorBtn">🤖 AI模型</button>
             </div>
             
             <div class="status-bar">
@@ -243,6 +244,7 @@
     <script src="src/services/DataService.js"></script>
     <script src="src/services/AIConnectionEngine.js"></script>
     <script src="src/services/EnhancedAIEngine.js"></script>
+    <script src="src/services/MultiModelManager.js"></script>
     
     <!-- 视图层 -->
     <script src="src/views/TreeView.js"></script>
@@ -259,6 +261,7 @@
     <script src="src/components/FilterPanel.js"></script>
     <script src="src/components/AIChat.js"></script>
     <script src="src/components/PhilosophyUI.js"></script>
+    <script src="src/components/ModelSelector.js"></script>
     
     <!-- 插件 -->
     <script src="src/plugins/ExportPlugin.js"></script>
@@ -363,15 +366,24 @@
         // 初始化UI
         function initUI() {
             // 导航按钮
-            document.querySelectorAll('.nav-btn').forEach(btn => {
+            document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const view = btn.dataset.view;
                     switchView(view);
                     
                     // 更新按钮状态
-                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.nav-btn[data-view]').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                 });
+            });
+            
+            // 模型选择器按钮
+            document.getElementById('modelSelectorBtn').addEventListener('click', () => {
+                if (app.modelSelector) {
+                    app.modelSelector.toggle();
+                } else {
+                    console.warn('模型选择器未初始化');
+                }
             });
             
             // 初始化组件
@@ -380,6 +392,13 @@
             app.getComponent('aiChat');
             app.getComponent('nodeCard');
             app.getComponent('philosophyUI');
+            
+            // 初始化模型选择器
+            if (typeof ModelSelector !== 'undefined' && app.modelManager) {
+                app.modelSelector = new ModelSelector(app);
+                app.modelSelector.render();
+                console.log('✅ 模型选择器初始化完成');
+            }
             
             // 显示默认视图
             app.showView('tree3d');
