@@ -425,3 +425,163 @@ window.closeDetail = closeDetail;
 window.exportData = exportData;
 window.shareNode = shareNode;
 window.applySettings = applySettings;
+
+// ============ AI助手功能 ============
+
+let aiAssistant;
+let relationshipNetwork;
+
+// 初始化AI助手
+function initAIAssistant() {
+    aiAssistant = new AIHistoryAssistant();
+    aiAssistant.setData(historyData);
+    
+    // 显示个性化推荐
+    showPersonalizedRecommendations();
+}
+
+// 切换AI面板
+function toggleAIPanel() {
+    const panel = document.getElementById('aiAssistantPanel');
+    panel.classList.toggle('hidden');
+}
+
+// 发送AI消息
+function sendAIMessage() {
+    const input = document.getElementById('aiInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // 显示用户消息
+    addAIMessage(message, 'user');
+    
+    // 获取AI回复
+    const response = aiAssistant.answerQuestion(message);
+    
+    // 显示AI回复
+    setTimeout(() => {
+        addAIMessage(response.answer, 'ai', response.items);
+    }, 500);
+    
+    // 清空输入
+    input.value = '';
+}
+
+// 添加AI消息
+function addAIMessage(message, type, items = []) {
+    const messagesContainer = document.getElementById('aiMessages');
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `ai-message ${type}`;
+    messageDiv.innerHTML = `
+        <div class="message-content">${message}</div>
+        ${items.length > 0 ? `
+            <div class="message-items">
+                ${items.map(item => `
+                    <div class="item-card" onclick="focusOnNode('${item.name}')">
+                        <strong>${item.name}</strong>
+                        <span class="item-year">${item.year || ''}</span>
+                    </div>
+                `).join('')}
+            </div>
+        ` : ''}
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// 显示个性化推荐
+function showPersonalizedRecommendations() {
+    const recommendations = aiAssistant.getPersonalizedRecommendations(3);
+    const container = document.getElementById('aiRecommendations');
+    
+    container.innerHTML = recommendations.map(item => `
+        <div class="recommendation-item" onclick="focusOnNode('${item.name}')">
+            <span class="rec-icon">${item.type === 'person' ? '👤' : '📍'}</span>
+            <span class="rec-name">${item.name}</span>
+        </div>
+    `).join('');
+}
+
+// ============ 关系网络功能 ============
+
+// 显示关系网络
+function showRelationshipNetwork() {
+    const modal = document.getElementById('networkModal');
+    modal.classList.remove('hidden');
+    
+    if (!relationshipNetwork) {
+        relationshipNetwork = new RelationshipNetwork('#networkContainer', {
+            width: 960,
+            height: 600,
+            onNodeClick: (node) => {
+                focusOnNode(node.name);
+            }
+        });
+        
+        relationshipNetwork.setData(
+            historicalRelationships.nodes,
+            historicalRelationships.links
+        );
+    }
+}
+
+// 关闭关系网络
+function closeNetworkModal() {
+    document.getElementById('networkModal').classList.add('hidden');
+}
+
+// ============ 增强时间轴 ============
+
+let enhancedTimeline;
+
+function initEnhancedTimeline() {
+    enhancedTimeline = new TimelineNavigator('#enhancedTimeline', {
+        width: 1200,
+        height: 120,
+        onPeriodSelect: (period) => {
+            filterByPeriod(period.name);
+        },
+        onEventClick: (event) => {
+            focusOnNode(event.name);
+        }
+    });
+    
+    // 设置事件标记
+    const events = aiAssistant.historyData
+        .filter(item => item.year)
+        .map(item => ({
+            ...item,
+            year: parseInt(item.year)
+        }));
+    
+    enhancedTimeline.setEvents(events);
+}
+
+// 按时期筛选
+function filterByPeriod(periodName) {
+    // 实现时期筛选逻辑
+    console.log('Filter by period:', periodName);
+}
+
+// 聚焦到节点
+function focusOnNode(nodeName) {
+    // 实现节点聚焦逻辑
+    console.log('Focus on node:', nodeName);
+}
+
+// ============ 初始化 ============
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+    // 原有初始化
+    init();
+    
+    // 新功能初始化
+    setTimeout(() => {
+        initAIAssistant();
+        initEnhancedTimeline();
+    }, 1000);
+});

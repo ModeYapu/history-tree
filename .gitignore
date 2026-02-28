@@ -5,3 +5,6 @@ node_modules/
 .git/
 PUSH_GUIDE.md
 
+-e 
+# GitHub Token
+.github-token
