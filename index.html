@@ -544,6 +544,15 @@
         } else {
             initApplication();
         }
+        
+        // 🤖 AI Agent 集成 - 在主应用初始化后加载
+        setTimeout(() => {
+            const aiScript = document.createElement('script');
+            aiScript.src = 'src/ai-agent-integration.js';
+            aiScript.onload = () => console.log('✅ AI Agent 已加载');
+            aiScript.onerror = () => console.warn('⚠️  AI Agent 加载失败');
+            document.head.appendChild(aiScript);
+        }, 2000);
     </script>
 </body>
 </html>

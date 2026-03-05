@@ -459,17 +459,19 @@ ${context.currentNode ? `当前分析对象：${context.currentNode.name}` : ''}
     async callAI(prompt, modelType = 'primary') {
         const modelConfig = this.models[modelType];
         
-        // 实际项目中应该调用真实的API
-        // 这里是模拟实现
-        
+        // 调用真实的AI API
         if (modelConfig.provider === 'anthropic') {
             return await this.callClaude(prompt, modelConfig.model);
         } else if (modelConfig.provider === 'openai') {
             return await this.callGPT(prompt, modelConfig.model);
+        } else if (modelConfig.provider === 'google') {
+            return await this.callGemini(prompt, modelConfig.model);
+        } else if (modelConfig.provider === 'zhipu') {
+            return await this.callZhipu(prompt, modelConfig.model);
         }
         
-        // 模拟响应
-        return this.getMockPhilosophicalResponse(prompt);
+        // 不支持的提供商
+        throw new Error(`Unsupported AI provider: ${modelConfig.provider}. Please configure a valid API key.`);
     }
     
     /**

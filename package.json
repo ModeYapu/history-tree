@@ -1,0 +1,33 @@
+{
+  "name": "history-tree",
+  "version": "1.0.0",
+  "description": "交互式历史可视化应用 - 以树形结构展现人类历史进程",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run test && npm run test:e2e",
+    "serve": "python3 -m http.server 8000",
+    "start": "./start.sh"
+  },
+  "keywords": [
+    "history",
+    "visualization",
+    "d3",
+    "tree",
+    "interactive"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.42.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "@testing-library/dom": "^9.8.0",
+    "@testing-library/jest-dom": "^6.4.0"
+  }
+}

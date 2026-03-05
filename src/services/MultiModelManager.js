@@ -9,21 +9,21 @@ class MultiModelManager {
         // 支持的模型配置
         this.models = {
             // OpenAI模型
-            'gpt-5.2-turbo': {
+            'gpt-4-turbo': {
                 provider: 'openai',
-                name: 'GPT-5.2 Turbo',
-                model: 'gpt-5.2-turbo-2025',
+                name: 'GPT-4 Turbo',
+                model: 'gpt-4-turbo-preview',
                 maxTokens: 128000,
                 features: ['fast', 'multimodal', 'reasoning'],
-                pricing: { input: 0.015, output: 0.06 }, // per 1K tokens
+                pricing: { input: 0.01, output: 0.03 }, // per 1K tokens
                 icon: '🚀',
                 color: '#10a37f',
                 description: 'OpenAI最新旗舰模型，快速响应，强大推理'
             },
-            'gpt-5.2': {
+            'gpt-4o': {
                 provider: 'openai',
                 name: 'GPT-5.2',
-                model: 'gpt-5.2-2025',
+                model: 'gpt-4o-2025',
                 maxTokens: 256000,
                 features: ['advanced', 'multimodal', 'deep-reasoning'],
                 pricing: { input: 0.03, output: 0.12 },
@@ -44,10 +44,10 @@ class MultiModelManager {
             },
             
             // Google模型
-            'gemini-3.0-pro': {
+            'gemini-1.5-pro': {
                 provider: 'google',
                 name: 'Gemini 3.0 Pro',
-                model: 'gemini-3.0-pro-2025',
+                model: 'gemini-1.5-pro-2025',
                 maxTokens: 128000,
                 features: ['multimodal', 'reasoning', 'fast'],
                 pricing: { input: 0.01, output: 0.03 },
@@ -55,10 +55,10 @@ class MultiModelManager {
                 color: '#4285f4',
                 description: 'Google最新模型，多模态，快速响应'
             },
-            'gemini-3.0-ultra': {
+            'gemini-1.5-flash': {
                 provider: 'google',
                 name: 'Gemini 3.0 Ultra',
-                model: 'gemini-3.0-ultra-2025',
+                model: 'gemini-1.5-flash-2025',
                 maxTokens: 256000,
                 features: ['advanced', 'multimodal', 'deep-reasoning'],
                 pricing: { input: 0.02, output: 0.06 },
@@ -79,7 +79,7 @@ class MultiModelManager {
                 color: '#d97706',
                 description: 'Anthropic旗舰模型，深度分析，哲学思辨'
             },
-            'claude-3.7-opus': {
+            'claude-3-5-sonnet-20241022': {
                 provider: 'anthropic',
                 name: 'Claude 3.7 Opus',
                 model: 'claude-3-7-opus-20250219',
@@ -142,11 +142,11 @@ class MultiModelManager {
         
         // 模型能力映射
         this.capabilityMap = {
-            'philosophy': ['claude-3.5-sonnet', 'claude-3.7-opus', 'gpt-5.2'],
-            'fast': ['gpt-5.2-turbo', 'gemini-3.0-pro', 'o3-mini'],
+            'philosophy': ['claude-3.5-sonnet', 'claude-3-5-sonnet-20241022', 'gpt-4o'],
+            'fast': ['gpt-4-turbo', 'gemini-1.5-pro', 'o3-mini'],
             'chinese': ['glm-5-plus', 'qwen-2.5-72b', 'deepseek-v3'],
             'local': ['deepseek-v3', 'qwen-2.5-72b'],
-            'multimodal': ['gpt-5.2-turbo', 'gemini-3.0-pro', 'gemini-3.0-ultra'],
+            'multimodal': ['gpt-4-turbo', 'gemini-1.5-pro', 'gemini-1.5-flash'],
             'cheap': ['o3-mini', 'claude-3.5-sonnet', 'deepseek-v3']
         };
         

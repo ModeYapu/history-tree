@@ -187,6 +187,13 @@ class HistoryTreeApp {
     }
     
     /**
+     * 获取模型管理器
+     */
+    getModelManager() {
+        return this.modelManager;
+    }
+    
+    /**
      * 注册插件
      */
     registerPlugin(name, plugin) {

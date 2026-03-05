@@ -48,6 +48,88 @@ npx http-server -p 8000
 # 访问 http://localhost:8000
 ```
 
+## 🧪 测试
+
+### 运行测试
+```bash
+# 安装依赖
+npm install
+
+# 运行单元测试
+npm test
+
+# 运行E2E测试
+npm run test:e2e
+
+# 运行所有测试
+npm run test:all
+
+# 生成覆盖率报告
+npm run test:coverage
+```
+
+### 测试内容
+- **单元测试** (Jest)
+  - HistoryNode 模型
+  - StateManager 状态管理
+  - EventBus 事件系统
+- **E2E测试** (Playwright)
+  - 应用加载和交互
+  - 搜索和筛选功能
+  - 响应式设计
+  - 性能测试
+- **视觉测试** (Playwright)
+  - UI快照对比
+  - 跨浏览器一致性
+
+详细文档请查看 [TESTING.md](./TESTING.md)
+
+## 🤖 MCP AI Agent
+
+历史之树现已集成 **MCP (Model Context Protocol)** AI Agent能力！
+
+### 快速开始
+
+```bash
+# 安装MCP集成
+./install-mcp.sh
+
+# 配置API Key
+编辑 mcp-server/.env
+
+# 启动应用
+./start.sh
+```
+
+### MCP功能
+
+| 功能 | 描述 | 示例 |
+|------|------|------|
+| 🔍 **智能搜索** | AI增强的历史搜索 | `search_history` |
+| 🤖 **关联分析** | 发现事件深层关联 | `analyze_connections` |
+| ❓ **历史问答** | 回答历史问题 | `ask_history_question` |
+| 📊 **时间线生成** | 生成主题时间线 | `generate_timeline` |
+| 💡 **智能推荐** | 个性化内容推荐 | `recommend_content` |
+| 🔄 **事件对比** | 对比历史事件 | `compare_events` |
+| 🔗 **影响追踪** | 追踪影响链 | `trace_influence_chain` |
+
+### 使用示例
+
+```bash
+# 通过mcporter使用
+mcporter call history-tree.search_history query="唐朝"
+mcporter call history-tree.ask_history_question question="唐朝为什么繁荣？"
+
+# 在应用中使用
+打开AI聊天 → 输入问题 → 获得AI回答
+```
+
+### 文档
+
+- 📖 [MCP使用指南](./MCP_USAGE_GUIDE.md) - 完整使用文档
+- 📦 [MCP服务器文档](./mcp-server/README.md) - 服务器配置和API
+- 🔧 [集成文档](./docs/mcp-integration.md) - 开发者集成指南
+
 ## 📖 使用指南
 
 ### 基本操作
