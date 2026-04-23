@@ -1,14 +1,18 @@
-/* 动画效果 */
+/* 动画效果 - 古典风格 */
 
 /* 树生长动画 */
 .node-grow {
-    animation: nodeGrow 1s ease-out forwards;
+    animation: nodeGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes nodeGrow {
     from {
         transform: scale(0);
         opacity: 0;
+    }
+    60% {
+        transform: scale(1.1);
+        opacity: 0.9;
     }
     to {
         transform: scale(1);
@@ -18,35 +22,32 @@
 
 /* 树叶飘动 */
 .leaf-sway {
-    animation: leafSway 3s ease-in-out infinite;
+    animation: leafSway 4s ease-in-out infinite;
+    transform-origin: bottom center;
 }
 
 @keyframes leafSway {
-    0%, 100% {
-        transform: rotate(-3deg);
-    }
-    50% {
-        transform: rotate(3deg);
-    }
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
 }
 
 /* 节点发光 */
 .node-glow {
-    animation: nodeGlow 2s ease-in-out infinite;
+    animation: nodeGlow 3s ease-in-out infinite;
 }
 
 @keyframes nodeGlow {
     0%, 100% {
-        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+        filter: drop-shadow(0 0 4px rgba(212, 168, 83, 0.3));
     }
     50% {
-        filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+        filter: drop-shadow(0 0 14px rgba(212, 168, 83, 0.6));
     }
 }
 
 /* 脉冲效果 */
 .pulse {
-    animation: pulse 2s ease-in-out infinite;
+    animation: pulse 2.5s ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -55,8 +56,8 @@
         opacity: 1;
     }
     50% {
-        transform: scale(1.1);
-        opacity: 0.8;
+        transform: scale(1.08);
+        opacity: 0.85;
     }
 }
 
@@ -66,35 +67,27 @@
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .fade-out {
-    animation: fadeOut 0.5s ease-out forwards;
+    animation: fadeOut 0.4s ease-out forwards;
 }
 
 @keyframes fadeOut {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-    }
+    from { opacity: 1; }
+    to { opacity: 0; }
 }
 
 /* 滑入效果 */
 .slide-in-right {
-    animation: slideInRight 0.5s ease-out forwards;
+    animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes slideInRight {
     from {
-        transform: translateX(100px);
+        transform: translateX(80px);
         opacity: 0;
     }
     to {
@@ -104,12 +97,12 @@
 }
 
 .slide-in-left {
-    animation: slideInLeft 0.5s ease-out forwards;
+    animation: slideInLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes slideInLeft {
     from {
-        transform: translateX(-100px);
+        transform: translateX(-80px);
         opacity: 0;
     }
     to {
@@ -118,14 +111,29 @@
     }
 }
 
+.slide-in-up {
+    animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 /* 缩放效果 */
 .scale-up {
-    animation: scaleUp 0.3s ease-out forwards;
+    animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes scaleUp {
     from {
-        transform: scale(0.8);
+        transform: scale(0.85);
         opacity: 0;
     }
     to {
@@ -140,54 +148,42 @@
 }
 
 @keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* 弹跳效果 */
 .bounce {
-    animation: bounce 1s ease infinite;
+    animation: bounce 1.2s cubic-bezier(0.36, 0, 0.66, -0.56) infinite alternate;
 }
 
 @keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
+    from { transform: translateY(0); }
+    to { transform: translateY(-8px); }
 }
 
 /* 闪烁效果 */
 .blink {
-    animation: blink 1s ease-in-out infinite;
+    animation: blink 2s ease-in-out infinite;
 }
 
 @keyframes blink {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
 }
 
-/* 波纹效果 */
-.ripple {
-    animation: ripple 1s ease-out;
+/* 波纹/涟漪效果 */
+.ripple-effect {
+    animation: rippleEffect 0.6s ease-out;
 }
 
-@keyframes ripple {
+@keyframes rippleEffect {
     0% {
-        transform: scale(1);
-        opacity: 1;
+        transform: scale(0);
+        opacity: 0.6;
     }
     100% {
-        transform: scale(2);
+        transform: scale(2.5);
         opacity: 0;
     }
 }
@@ -196,7 +192,7 @@
 .path-draw {
     stroke-dasharray: 1000;
     stroke-dashoffset: 1000;
-    animation: pathDraw 2s ease-in-out forwards;
+    animation: pathDraw 2.5s ease-in-out forwards;
 }
 
 @keyframes pathDraw {
@@ -207,55 +203,43 @@
 
 /* 颜色渐变动画 */
 .color-shift {
-    animation: colorShift 3s ease-in-out infinite;
+    animation: colorShift 4s ease-in-out infinite;
 }
 
 @keyframes colorShift {
-    0%, 100% {
-        fill: #228B22;
-    }
-    50% {
-        fill: #32CD32;
-    }
+    0%, 100% { fill: rgba(212, 168, 83, 0.2); }
+    50% { fill: rgba(212, 168, 83, 0.4); }
 }
 
 /* 浮动效果 */
 .float {
-    animation: float 3s ease-in-out infinite;
+    animation: float 4s ease-in-out infinite;
 }
 
 @keyframes float {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-20px);
-    }
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
 }
 
 /* 摇摆效果 */
 .swing {
-    animation: swing 2s ease-in-out infinite;
+    animation: swing 3s ease-in-out infinite;
     transform-origin: top center;
 }
 
 @keyframes swing {
-    0%, 100% {
-        transform: rotate(-5deg);
-    }
-    50% {
-        transform: rotate(5deg);
-    }
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
 }
 
 /* 组合动画 - 树节点出现 */
 .tree-node-appear {
-    animation: treeNodeAppear 0.8s ease-out forwards;
+    animation: treeNodeAppear 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes treeNodeAppear {
     0% {
-        transform: scale(0) rotate(-180deg);
+        transform: scale(0) rotate(-90deg);
         opacity: 0;
     }
     100% {
@@ -266,36 +250,58 @@
 
 /* 组合动画 - 树叶飘落 */
 .leaf-fall {
-    animation: leafFall 4s ease-in-out infinite;
+    animation: leafFall 5s ease-in-out infinite;
 }
 
 @keyframes leafFall {
     0% {
-        transform: translateY(-10px) rotate(0deg);
-        opacity: 1;
-    }
-    50% {
-        transform: translateY(10px) rotate(180deg);
+        transform: translateY(-8px) rotate(0deg);
         opacity: 0.8;
     }
+    50% {
+        transform: translateY(8px) rotate(180deg);
+        opacity: 0.6;
+    }
     100% {
-        transform: translateY(-10px) rotate(360deg);
-        opacity: 1;
+        transform: translateY(-8px) rotate(360deg);
+        opacity: 0.8;
     }
 }
 
-/* 加载动画 - 旋转的树 */
+/* 加载动画 - 生长的树 */
+.loading-grow {
+    animation: loadingGrow 2s ease-in-out infinite;
+}
+
+@keyframes loadingGrow {
+    0% { transform: scale(0.9) rotate(-1deg); }
+    25% { transform: scale(1.1) rotate(1deg); }
+    50% { transform: scale(1) rotate(0deg); }
+    75% { transform: scale(1.05) rotate(-0.5deg); }
+    100% { transform: scale(0.9) rotate(-1deg); }
+}
+
+/* 加载旋转 */
 .loading-spin {
     animation: loadingSpin 2s linear infinite;
 }
 
 @keyframes loadingSpin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 进度条动画 */
+.progress-bar {
+    animation: progressFill 2s ease-in-out forwards;
+}
+
+@keyframes progressFill {
+    0% { width: 0%; }
+    20% { width: 20%; }
+    50% { width: 55%; }
+    80% { width: 85%; }
+    100% { width: 100%; }
 }
 
 /* 延迟动画 */

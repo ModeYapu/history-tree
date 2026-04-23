@@ -200,8 +200,8 @@ function showWelcomeMessage() {
 }
 
 // 添加动画样式
-const style = document.createElement('style');
-style.textContent = `
+const mainStyle = document.createElement('style');
+mainStyle.textContent = `
     @keyframes slideIn {
         from {
             transform: translateX(400px);
@@ -224,14 +224,14 @@ style.textContent = `
         }
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(mainStyle);
 
-// 页面加载完成后初始化
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-} else {
-    initApp();
-}
+// 页面加载完成后初始化 - disabled, index.html handles init
+// if (document.readyState === 'loading') {
+//     document.addEventListener('DOMContentLoaded', initApp);
+// } else {
+//     initApp();
+// }
 
 // 导出初始化函数
 window.initApp = initApp;

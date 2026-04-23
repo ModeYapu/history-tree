@@ -3,7 +3,7 @@
  * 性能提升: O(n*m) → O(log n)
  */
 
-export class SearchEngine {
+class SearchEngine {
     constructor() {
         this.index = new Map();      // 倒排索引: 词 → 文档ID集合
         this.documents = new Map();  // 文档存储: ID → 文档
@@ -238,4 +238,6 @@ export class SearchEngine {
 }
 
 // 创建全局搜索引擎实例
-export const searchEngine = new SearchEngine();
+const searchEngine = new SearchEngine;
+window.SearchEngine = SearchEngine;
+window.searchEngine = searchEngine;

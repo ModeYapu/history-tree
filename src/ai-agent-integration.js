@@ -105,8 +105,8 @@ script2.onload = async function() {
 };
 
 // 8. 添加样式
-const style = document.createElement('style');
-style.textContent = `
+const aiStyle = document.createElement('style');
+aiStyle.textContent = `
   /* AI聊天面板增强样式 */
   .ai-chat-panel.enhanced {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -208,6 +208,6 @@ style.textContent = `
     line-height: 1.8;
   }
 `;
-document.head.appendChild(style);
+document.head.appendChild(aiStyle);
 
 console.log('📝 AI Agent 集成脚本已加载');

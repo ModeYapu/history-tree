@@ -68,7 +68,7 @@ class HistoryTreeApp {
             this.router.start();
             
             // 7. 显示主视图
-            this.showView('tree');
+            this.showView('tree3d');
             
             console.log('✅ 初始化完成');
             this.eventBus.emit('app:ready');
@@ -102,14 +102,15 @@ class HistoryTreeApp {
      */
     initViews() {
         console.log('🎨 初始化视图...');
-        
+
         // 注册视图
         this.registerView('tree', new TreeView(this));
+        this.registerView('tree3d', new HistoryTree3D(this));
         this.registerView('timeline', new TimelineView(this));
         this.registerView('map', new MapView(this));
         this.registerView('network', new NetworkView(this));
         this.registerView('cards', new CardView(this));
-        
+
         console.log('✅ 视图初始化完成');
     }
     
@@ -124,8 +125,7 @@ class HistoryTreeApp {
         this.registerComponent('filterPanel', new FilterPanel(this));
         this.registerComponent('aiChat', new AIChat(this));
         this.registerComponent('nodeCard', new NodeCard(this));
-        this.registerComponent('timeline', new TimelineComponent(this));
-        
+
         // 渲染全局组件
         this.renderGlobalComponents();
         
@@ -213,22 +213,18 @@ class HistoryTreeApp {
      */
     renderGlobalComponents() {
         const container = document.querySelector(this.options.container);
-        
+
         // 搜索栏
         const searchBar = this.getComponent('searchBar');
-        container.appendChild(searchBar.render());
-        
+        if (searchBar) container.appendChild(searchBar.render());
+
         // 筛选面板
         const filterPanel = this.getComponent('filterPanel');
-        container.appendChild(filterPanel.render());
-        
+        if (filterPanel) container.appendChild(filterPanel.render());
+
         // AI聊天
         const aiChat = this.getComponent('aiChat');
-        container.appendChild(aiChat.render());
-        
-        // 时间轴
-        const timeline = this.getComponent('timeline');
-        container.appendChild(timeline.render());
+        if (aiChat) container.appendChild(aiChat.render());
     }
     
     /**
@@ -279,8 +275,8 @@ class HistoryTreeApp {
         this.eventBus.emit('app:error', error);
         
         // 显示错误提示
-        const errorUI = new ErrorNotification(error);
-        errorUI.show();
+        console.error('Error details:', error);
+        alert('应用出错: ' + (error.message || error));
     }
     
     /**

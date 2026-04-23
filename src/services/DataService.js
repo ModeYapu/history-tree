@@ -2,7 +2,7 @@
  * 数据服务 - 数据加载和管理
  */
 
-import { searchEngine } from './SearchEngine.js';
+/* SearchEngine loaded via script tag - searchEngine is global */
 
 class DataService {
     constructor(eventBus) {
@@ -37,13 +37,44 @@ class DataService {
      */
     async loadCoreData() {
         try {
-            // 加载历史数据
+            // 数据通过 historical-dataset.js 全局变量加载
+            if (window.HistoricalDataset) {
+                console.log('📦 使用全局数据集加载...');
+                const dataset = window.HistoricalDataset;
+                let count = 0;
+                for (const period of Object.keys(dataset)) {
+                    const periodData = dataset[period];
+                    if (periodData.events) {
+                        periodData.events.forEach(event => {
+                            const node = new HistoryNode(event);
+                            this.nodes.set(node.id, node);
+                            this.indexNode(node);
+                            count++;
+                        });
+                    }
+                    if (periodData.persons) {
+                        periodData.persons.forEach(person => {
+                            const node = new HistoryNode(person);
+                            this.nodes.set(node.id, node);
+                            this.indexNode(node);
+                            count++;
+                        });
+                    }
+                }
+                this.stats.totalNodes = count;
+                console.log(`✅ 加载了 ${count} 个历史节点`);
+
+                // 构建树形层次结构
+                this.buildTree();
+
+                this.eventBus.emit('data:load', { success: true, count });
+                return;
+            }
+            
+            // 回退：尝试从JSON加载
             const response = await fetch('./data/history-data.json');
             const data = await response.json();
-            
-            // 处理数据
             this.processData(data);
-            
             this.eventBus.emit('data:load', { success: true });
             
         } catch (error) {
@@ -153,6 +184,109 @@ class DataService {
         }
     }
     
+    /**
+     * 构建树形层次结构
+     * 将扁平数据组织为：root → 时期节点 → 分类节点 → 事件/人物
+     */
+    buildTree() {
+        // 时期映射
+        const periodMap = {
+            ancient: '远古时代',
+            classical: '古代',
+            medieval: '中世纪',
+            modern: '近现代'
+        };
+
+        const categoryNames = {
+            politics: '政治',
+            technology: '科技',
+            culture: '文化',
+            economy: '经济',
+            military: '军事'
+        };
+
+        // 按时期和分类分组
+        const grouped = {};
+        this.nodes.forEach(node => {
+            const period = node.time.period || '未分类';
+            const category = node.category.primary || 'other';
+            if (!grouped[period]) grouped[period] = {};
+            if (!grouped[period][category]) grouped[period][category] = [];
+            grouped[period][category].push(node);
+        });
+
+        // 构建树：root → period → category → nodes
+        const rootChildren = [];
+
+        for (const [periodKey, periodLabel] of Object.entries(periodMap)) {
+            const periodGroup = grouped[periodLabel];
+            if (!periodGroup) continue;
+
+            const categoryChildren = [];
+            for (const [catKey, catLabel] of Object.entries(categoryNames)) {
+                const catNodes = periodGroup[catKey];
+                if (!catNodes || catNodes.length === 0) continue;
+
+                const catNode = {
+                    id: `cat_${periodKey}_${catKey}`,
+                    name: catLabel,
+                    type: 'branch',
+                    category: { primary: catKey, tags: [catLabel] },
+                    time: { period: periodLabel },
+                    location: {},
+                    metadata: { importance: 3 },
+                    children: catNodes.map(n => ({
+                        id: n.id,
+                        name: n.name,
+                        type: n.type,
+                        category: n.category,
+                        time: n.time,
+                        location: n.location,
+                        description: n.description,
+                        metadata: n.metadata,
+                        children: []
+                    }))
+                };
+                categoryChildren.push(catNode);
+            }
+
+            if (categoryChildren.length === 0) continue;
+
+            const periodNode = {
+                id: `period_${periodKey}`,
+                name: periodLabel,
+                type: 'period',
+                category: { primary: 'period', tags: [periodLabel] },
+                time: { period: periodLabel },
+                location: {},
+                metadata: { importance: 5 },
+                children: categoryChildren
+            };
+            rootChildren.push(periodNode);
+        }
+
+        // 创建根节点
+        const rootNode = {
+            id: 'root',
+            name: '历史之树',
+            type: 'period',
+            category: { primary: 'period', tags: ['历史'] },
+            time: { period: '全部' },
+            location: {},
+            description: '人类历史进程可视化',
+            metadata: { importance: 5 },
+            children: rootChildren
+        };
+
+        // 注册根节点
+        const rootHistoryNode = new HistoryNode(rootNode);
+        // 手动设置子节点为原始数据对象（d3.hierarchy需要）
+        rootHistoryNode.children = rootChildren;
+        this.nodes.set('root', rootHistoryNode);
+
+        console.log(`🌳 树形结构构建完成: ${rootChildren.length} 个时期`);
+    }
+
     /**
      * 构建所有索引
      */

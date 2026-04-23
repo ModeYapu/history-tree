@@ -83,7 +83,11 @@ class TreeView {
     loadData() {
         const data = this.app.dataService.getNode('root');
         if (data) {
-            this.render(data);
+            // 使用原始数据对象供d3.hierarchy遍历（HistoryNode.children存的是plain objects）
+            const treeData = data;
+            this.render(treeData);
+        } else {
+            console.warn('⚠️ 未找到root节点，无法渲染树');
         }
     }
     
