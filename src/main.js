@@ -65,6 +65,16 @@ async function initApp() {
     app.router.register(Routes.NETWORK, () => {
         app.showView('network');
     });
+
+    app.router.register(Routes.CARDS, () => {
+        app.showView('cards');
+    });
+
+    app.router.register('/quiz', () => {
+        if (app.quizEngine) {
+            app.quizEngine.showUI({ autoStart: true });
+        }
+    });
     
     app.router.register(Routes.SEARCH, (params, query) => {
         if (query.q) {
@@ -126,6 +136,12 @@ async function initApp() {
                     e.preventDefault();
                     app.showView('cards');
                     break;
+                case '6':
+                    e.preventDefault();
+                    if (app.quizEngine) {
+                        app.quizEngine.showUI({ autoStart: true });
+                    }
+                    break;
             }
         }
         
@@ -140,6 +156,14 @@ async function initApp() {
             e.preventDefault();
             const analytics = app.getPlugin('analytics');
             analytics.showVisualization();
+        }
+
+        // Ctrl/Cmd + Q: 问答
+        if ((e.ctrlKey || e.metaKey) && e.key === 'q') {
+            e.preventDefault();
+            if (app.quizEngine) {
+                app.quizEngine.showUI({ autoStart: true });
+            }
         }
     });
     
@@ -200,10 +224,14 @@ function showWelcomeMessage() {
     const shortcut3 = document.createElement('div');
     shortcut3.textContent = '• Ctrl+E: 导出';
 
+    const shortcut4 = document.createElement('div');
+    shortcut4.textContent = '• Ctrl+Q: 历史问答';
+
     shortcutsDiv.appendChild(shortcutsLabel);
     shortcutsDiv.appendChild(shortcut1);
     shortcutsDiv.appendChild(shortcut2);
     shortcutsDiv.appendChild(shortcut3);
+    shortcutsDiv.appendChild(shortcut4);
 
     // 按钮
     const button = document.createElement('button');

@@ -238,8 +238,10 @@ const Routes = {
     TIMELINE: '/timeline',
     MAP: '/map',
     NETWORK: '/network',
+    CARDS: '/cards',
     NODE: '/node/:id',
     SEARCH: '/search',
+    QUIZ: '/quiz',
     SETTINGS: '/settings'
 };
 

@@ -18,6 +18,7 @@ class HistoryTreeApp {
         this.router = null;
         this.dataService = null;
         this.modelManager = null;
+        this.quizEngine = null;
         
         // 视图管理
         this.views = new Map();
@@ -50,6 +51,13 @@ class HistoryTreeApp {
             if (typeof MultiModelManager !== 'undefined') {
                 this.modelManager = new MultiModelManager(this);
                 console.log('✅ 多模型管理器初始化完成');
+            }
+
+            // 2.1 初始化问答引擎
+            if (typeof QuizEngine !== 'undefined') {
+                this.quizEngine = new QuizEngine(this);
+                this.quizEngine.init();
+                console.log('✅ 问答引擎初始化完成');
             }
             
             // 3. 加载数据
@@ -142,6 +150,7 @@ class HistoryTreeApp {
         this.registerPlugin('export', new ExportPlugin(this));
         this.registerPlugin('analytics', new AnalyticsPlugin(this));
         this.registerPlugin('education', new EducationPlugin(this));
+        this.registerPlugin('timeline', new TimelinePlugin(this));
         
         console.log('✅ 插件加载完成');
     }
@@ -191,6 +200,13 @@ class HistoryTreeApp {
      */
     getModelManager() {
         return this.modelManager;
+    }
+
+    /**
+     * 获取问答引擎
+     */
+    getQuizEngine() {
+        return this.quizEngine;
     }
     
     /**
