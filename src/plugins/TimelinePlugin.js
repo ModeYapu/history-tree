@@ -4,39 +4,51 @@
  */
 
 class TimelinePlugin {
+    static PERIODS = [
+        { id: 'spring-autumn', name: '春秋', start: -770, end: -476, color: '#8B4513', description: '东周前半期' },
+        { id: 'warring', name: '战国', start: -475, end: -221, color: '#DAA520', description: '东周后半期' },
+        { id: 'qin-han', name: '秦汉', start: -221, end: 220, color: '#CD853F', description: '大一统时期' },
+        { id: 'three-kingdoms', name: '三国', start: 220, end: 280, color: '#BC8F8F', description: '魏蜀吴鼎立' },
+        { id: 'jin-northern-southern', name: '两晋南北朝', start: 280, end: 589, color: '#D2B48C', description: '分裂与融合' },
+        { id: 'sui-tang', name: '隋唐', start: 581, end: 907, color: '#DAA520', description: '盛世' },
+        { id: 'song-yuan', name: '宋元', start: 960, end: 1368, color: '#4A90E2', description: '文化繁荣' },
+        { id: 'ming-qing', name: '明清', start: 1368, end: 1911, color: '#E74C3C', description: '帝制晚期' },
+        { id: 'modern', name: '近现代', start: 1911, end: 2024, color: '#9B59B6', description: '走向共和' }
+    ];
+
+    static CATEGORY_COLORS = {
+        politics: '#ff6b6b',
+        technology: '#4ecdc4',
+        culture: '#a855f7',
+        economy: '#22c55e',
+        military: '#f97316',
+        default: '#999'
+    };
+
+    static TIME_RANGE = {
+        min: -3000,
+        max: 2024,
+        total: 5024
+    };
+
+    static CONFIG = {
+        minRange: 50,
+        zoomInFactor: 0.7,
+        zoomOutFactor: 1.3,
+        minZoomRange: 100
+    };
+
     constructor(app) {
         this.app = app;
         this.name = 'timelinePlugin';
         this.version = '1.0.0';
 
-        // 时间范围
-        this.timeRange = {
-            start: -3000,
-            end: 2024
-        };
-
-        // 历史时期定义
-        this.periods = [
-            { id: 'spring-autumn', name: '春秋', start: -770, end: -476, color: '#8B4513', description: '东周前半期' },
-            { id: 'warring', name: '战国', start: -475, end: -221, color: '#DAA520', description: '东周后半期' },
-            { id: 'qin-han', name: '秦汉', start: -221, end: 220, color: '#CD853F', description: '大一统时期' },
-            { id: 'three-kingdoms', name: '三国', start: 220, end: 280, color: '#BC8F8F', description: '魏蜀吴鼎立' },
-            { id: 'jin-northern-southern', name: '两晋南北朝', start: 280, end: 589, color: '#D2B48C', description: '分裂与融合' },
-            { id: 'sui-tang', name: '隋唐', start: 581, end: 907, color: '#DAA520', description: '盛世' },
-            { id: 'song-yuan', name: '宋元', start: 960, end: 1368, color: '#4A90E2', description: '文化繁荣' },
-            { id: 'ming-qing', name: '明清', start: 1368, end: 1911, color: '#E74C3C', description: '帝制晚期' },
-            { id: 'modern', name: '近现代', start: 1911, end: 2024, color: '#9B59B6', description: '走向共和' }
-        ];
-
-        // 事件监听器
+        this.timeRange = { start: TimelinePlugin.TIME_RANGE.min, end: TimelinePlugin.TIME_RANGE.max };
+        this.periods = [...TimelinePlugin.PERIODS];
         this.eventListeners = [];
-
-        // UI 元素
         this.timelineElement = null;
         this.isVisible = false;
         this.isDragging = false;
-
-        // 动画状态
         this.animationFrame = null;
     }
 
@@ -422,36 +434,35 @@ class TimelinePlugin {
      * 年份转百分比
      */
     yearToPercent(year) {
-        const totalRange = 5024; // -3000 到 2024
-        return ((year + 3000) / totalRange) * 100;
+        return ((year - TimelinePlugin.TIME_RANGE.min) / TimelinePlugin.TIME_RANGE.total) * 100;
     }
 
     /**
      * 像素转年份
      */
     pixelToYear(pixel, containerWidth) {
-        const totalRange = 5024;
-        return (pixel / containerWidth) * totalRange - 3000;
+        return (pixel / containerWidth) * TimelinePlugin.TIME_RANGE.total + TimelinePlugin.TIME_RANGE.min;
     }
 
     /**
      * 格式化年份
      */
     formatYear(year) {
-        if (year < 0) return `公元前${Math.abs(year)}年`;
-        return `${year}年`;
+        return year < 0 ? `公元前${Math.abs(year)}年` : `${year}年`;
     }
 
     /**
      * 设置时间范围
      */
     setTimeRange(start, end) {
-        this.timeRange.start = Math.max(-3000, Math.round(start));
-        this.timeRange.end = Math.min(2024, Math.round(end));
+        const { min, max, minRange } = TimelinePlugin.TIME_RANGE;
+        const configMinRange = TimelinePlugin.CONFIG.minRange;
 
-        // 确保最小间隔
-        if (this.timeRange.end - this.timeRange.start < 50) {
-            this.timeRange.end = this.timeRange.start + 50;
+        this.timeRange.start = Math.max(min, Math.round(start));
+        this.timeRange.end = Math.min(max, Math.round(end));
+
+        if (this.timeRange.end - this.timeRange.start < configMinRange) {
+            this.timeRange.end = this.timeRange.start + configMinRange;
         }
 
         this.updateTimelineUI();
@@ -491,9 +502,9 @@ class TimelinePlugin {
      * 放大
      */
     zoomIn() {
-        const range = this.timeRange.end - this.timeRange.start;
-        const center = (this.timeRange.start + this.timeRange.end) / 2;
-        const newRange = Math.max(100, range * 0.7);
+        const { start, end } = this.timeRange;
+        const center = (start + end) / 2;
+        const newRange = Math.max(TimelinePlugin.CONFIG.minZoomRange, (end - start) * TimelinePlugin.CONFIG.zoomInFactor);
 
         this.timeRange.start = Math.round(center - newRange / 2);
         this.timeRange.end = Math.round(center + newRange / 2);
@@ -506,12 +517,13 @@ class TimelinePlugin {
      * 缩小
      */
     zoomOut() {
-        const range = this.timeRange.end - this.timeRange.start;
-        const center = (this.timeRange.start + this.timeRange.end) / 2;
-        const newRange = Math.min(5024, range * 1.3);
+        const { start, end } = this.timeRange;
+        const center = (start + end) / 2;
+        const newRange = Math.min(TimelinePlugin.TIME_RANGE.total, (end - start) * TimelinePlugin.CONFIG.zoomOutFactor);
 
-        this.timeRange.start = Math.max(-3000, Math.round(center - newRange / 2));
-        this.timeRange.end = Math.min(2024, Math.round(center + newRange / 2));
+        const { min, max } = TimelinePlugin.TIME_RANGE;
+        this.timeRange.start = Math.max(min, Math.round(center - newRange / 2));
+        this.timeRange.end = Math.min(max, Math.round(center + newRange / 2));
 
         this.updateTimelineUI();
         this.emitTimeRangeChange();
@@ -521,7 +533,7 @@ class TimelinePlugin {
      * 重置
      */
     reset() {
-        this.timeRange = { start: -3000, end: 2024 };
+        this.timeRange = { start: TimelinePlugin.TIME_RANGE.min, end: TimelinePlugin.TIME_RANGE.max };
         this.updateTimelineUI();
         this.emitTimeRangeChange();
     }
@@ -545,14 +557,7 @@ class TimelinePlugin {
      * 获取分类颜色
      */
     getCategoryColor(category) {
-        const colors = {
-            politics: '#ff6b6b',
-            technology: '#4ecdc4',
-            culture: '#a855f7',
-            economy: '#22c55e',
-            military: '#f97316'
-        };
-        return colors[category] || '#999';
+        return TimelinePlugin.CATEGORY_COLORS[category] || TimelinePlugin.CATEGORY_COLORS.default;
     }
 
     /**

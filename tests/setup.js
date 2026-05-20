@@ -17,6 +17,47 @@ try {
   console.warn('Failed to load source modules:', e.message);
 }
 
+// Mock Leaflet before loading MapView
+global.L = {
+  map: jest.fn(() => ({
+    add: jest.fn(),
+    remove: jest.fn(),
+    invalidateSize: jest.fn(),
+    flyTo: jest.fn(),
+    hasLayer: jest.fn(() => true),
+    on: jest.fn(),
+    off: jest.fn(),
+    setView: jest.fn(),
+    getBounds: jest.fn(() => ({ pad: jest.fn() })),
+    getZoom: jest.fn(() => 5),
+    addLayer: jest.fn(),
+    removeLayer: jest.fn()
+  })),
+  tileLayer: jest.fn(() => ({
+    addTo: jest.fn(() => ({ addTo: jest.fn() }))
+  })),
+  circleMarker: jest.fn(() => ({
+    addTo: jest.fn(),
+    bindPopup: jest.fn(),
+    on: jest.fn(),
+    setStyle: jest.fn(),
+    remove: jest.fn(),
+    openPopup: jest.fn(),
+    setLatLng: jest.fn(),
+    getLatLng: jest.fn()
+  })),
+  control: {
+    zoom: jest.fn(() => ({ addTo: jest.fn() })),
+    scale: jest.fn(() => ({ addTo: jest.fn() }))
+  }
+};
+
+// Load new modules
+global.window = global;
+try { require('../src/views/MapView.js'); } catch (e) { console.warn('Failed to load MapView:', e.message); }
+try { require('../src/services/QuizEngine.js'); } catch (e) { console.warn('Failed to load QuizEngine:', e.message); }
+try { require('../src/plugins/TimelinePlugin.js'); } catch (e) { console.warn('Failed to load TimelinePlugin:', e.message); }
+
 // Mock D3.js
 global.d3 = {
   select: jest.fn(() => ({

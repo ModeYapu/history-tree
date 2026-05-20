@@ -4,6 +4,46 @@
  */
 
 class MapView {
+    static PERIODS = [
+        { name: '春秋', start: -770, end: -476, color: '#8B4513' },
+        { name: '战国', start: -475, end: -221, color: '#DAA520' },
+        { name: '秦汉', start: -221, end: 220, color: '#CD853F' },
+        { name: '三国', start: 220, end: 280, color: '#BC8F8F' },
+        { name: '唐宋', start: 618, end: 1279, color: '#4A90E2' },
+        { name: '明清', start: 1368, end: 1911, color: '#E74C3C' },
+        { name: '近现代', start: 1911, end: 2024, color: '#9B59B6' }
+    ];
+
+    static CATEGORY_COLORS = {
+        politics: '#ff6b6b',
+        technology: '#4ecdc4',
+        culture: '#a855f7',
+        economy: '#22c55e',
+        military: '#f97316',
+        default: '#999'
+    };
+
+    static CATEGORY_NAMES = {
+        politics: '政治',
+        technology: '科技',
+        culture: '文化',
+        economy: '经济',
+        military: '军事'
+    };
+
+    static CONFIG = {
+        center: [35, 105],
+        zoom: 4,
+        minZoom: 2,
+        maxZoom: 18,
+        flyToDuration: 1.5
+    };
+
+    static TIME_RANGE = {
+        min: -3000,
+        max: 2024
+    };
+
     constructor(app) {
         this.app = app;
         this.container = null;
@@ -11,39 +51,13 @@ class MapView {
         this.markers = [];
         this.markerClusters = [];
 
-        this.config = {
-            center: [35, 105],
-            zoom: 4,
-            minZoom: 2,
-            maxZoom: 18
-        };
-
-        // 时间范围
-        this.timeRange = {
-            start: -3000,
-            end: 2024
-        };
-
-        // 当前筛选
-        this.filters = {
-            category: null,
-            period: null,
-            minImportance: 0
-        };
-
-        // 历史时期定义
-        this.periods = [
-            { name: '春秋', start: -770, end: -476, color: '#8B4513' },
-            { name: '战国', start: -475, end: -221, color: '#DAA520' },
-            { name: '秦汉', start: -221, end: 220, color: '#CD853F' },
-            { name: '三国', start: 220, end: 280, color: '#BC8F8F' },
-            { name: '唐宋', start: 618, end: 1279, color: '#4A90E2' },
-            { name: '明清', start: 1368, end: 1911, color: '#E74C3C' },
-            { name: '近现代', start: 1911, end: 2024, color: '#9B59B6' }
-        ];
-
-        // 事件监听器
+        this.config = { ...MapView.CONFIG };
+        this.timeRange = { start: MapView.TIME_RANGE.min, end: MapView.TIME_RANGE.max };
+        this.filters = { category: null, period: null, minImportance: 0 };
+        this.periods = [...MapView.PERIODS];
         this.eventListeners = [];
+
+        this.uiElements = {};
     }
 
     show(options = {}) {
@@ -441,8 +455,43 @@ class MapView {
      * 格式化年份显示
      */
     formatYear(year) {
-        if (year < 0) return `公元前${Math.abs(year)}年`;
-        return `${year}年`;
+        return year < 0 ? `公元前${Math.abs(year)}年` : `${year}年`;
+    }
+
+    /**
+     * 计算年份在时间轴上的百分比
+     */
+    percentForYear(year) {
+        const totalRange = MapView.TIME_RANGE.max - MapView.TIME_RANGE.min;
+        return ((year - MapView.TIME_RANGE.min) / totalRange) * 100;
+    }
+
+    /**
+     * 根据年份获取时期
+     */
+    getPeriodForYear(year) {
+        return this.periods.find(p => year >= p.start && year <= p.end);
+    }
+
+    /**
+     * 获取标记半径
+     */
+    getMarkerRadius(node) {
+        return 5 + (node.metadata?.importance || 3) * 2;
+    }
+
+    /**
+     * 获取标记颜色
+     */
+    getMarkerColor(node) {
+        return MapView.CATEGORY_COLORS[node.category?.primary] || MapView.CATEGORY_COLORS.default;
+    }
+
+    /**
+     * 获取分类名称
+     */
+    getCategoryName(category) {
+        return MapView.CATEGORY_NAMES[category] || category;
     }
 
     /**
@@ -483,12 +532,12 @@ class MapView {
      * 添加标记
      */
     addMarker(node) {
-        const [lng, lat] = node.location.coordinates;
-
-        // 检查是否在时间范围内
-        if (node.time.year && (node.time.year < this.timeRange.start || node.time.year > this.timeRange.end)) {
+        if (!node.location?.coordinates) return;
+        if (node.time?.year && (node.time.year < this.timeRange.start || node.time.year > this.timeRange.end)) {
             return;
         }
+
+        const [lng, lat] = node.location.coordinates;
 
         const marker = L.circleMarker([lat, lng], {
             radius: this.getMarkerRadius(node),
@@ -500,26 +549,15 @@ class MapView {
             className: 'map-marker'
         }).addTo(this.map);
 
-        // 绑定弹窗
         marker.bindPopup(this.createPopupContent(node), {
             maxWidth: 350,
             className: 'map-popup-container'
         });
 
-        // 绑定事件
-        marker.on('click', () => {
-            this.onMarkerClick(node);
-        });
+        marker.on('click', () => this.onMarkerClick(node));
+        marker.on('mouseover', () => marker.setStyle({ fillOpacity: 1, weight: 3 }));
+        marker.on('mouseout', () => marker.setStyle({ fillOpacity: 0.8, weight: 2 }));
 
-        marker.on('mouseover', (e) => {
-            marker.setStyle({ fillOpacity: 1, weight: 3 });
-        });
-
-        marker.on('mouseout', () => {
-            marker.setStyle({ fillOpacity: 0.8, weight: 2 });
-        });
-
-        // 保存节点引用
         marker.node = node;
         this.markers.push(marker);
     }
@@ -528,21 +566,15 @@ class MapView {
      * 创建弹窗内容
      */
     createPopupContent(node) {
-        const period = this.getPeriodForYear(node.time.year);
-        const categoryNames = {
-            politics: '政治',
-            technology: '科技',
-            culture: '文化',
-            economy: '经济',
-            military: '军事'
-        };
+        const period = this.getPeriodForYear(node.time?.year);
+        const categoryName = this.getCategoryName(node.category?.primary);
 
         return `
             <div class="map-popup" style="min-width: 280px;">
                 <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333;">${node.name}</h3>
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                     <span style="padding: 3px 8px; background: #667eea; color: white; border-radius: 12px; font-size: 11px;">
-                        ${node.time.displayDate}
+                        ${node.time?.displayDate || '未知时间'}
                     </span>
                     ${period ? `
                         <span style="padding: 3px 8px; background: ${period.color}; color: white; border-radius: 12px; font-size: 11px;">
@@ -550,11 +582,11 @@ class MapView {
                         </span>
                     ` : ''}
                     <span style="padding: 3px 8px; background: #f0f0f0; color: #666; border-radius: 12px; font-size: 11px;">
-                        ${categoryNames[node.category.primary] || node.category.primary}
+                        ${categoryName}
                     </span>
                 </div>
-                <p style="margin: 0 0 10px 0; color: #666; line-height: 1.5;">${node.summary || node.description}</p>
-                ${node.location.name ? `
+                <p style="margin: 0 0 10px 0; color: #666; line-height: 1.5;">${node.summary || node.description || ''}</p>
+                ${node.location?.name ? `
                     <div style="display: flex; align-items: center; gap: 5px; color: #999; font-size: 12px;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path>
@@ -563,7 +595,7 @@ class MapView {
                         ${node.location.name}
                     </div>
                 ` : ''}
-                <button onclick="window.app.showView('tree3d', { nodeId: '${node.id}' })"
+                <button onclick="window.app?.showView('tree3d', { nodeId: '${node.id}' })"
                         style="width: 100%; margin-top: 10px; padding: 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
                     查看详情
                 </button>
@@ -582,28 +614,37 @@ class MapView {
      * 标记点击事件
      */
     onMarkerClick(node) {
-        this.app.eventBus.emit('node:select', node);
+        this.app.eventBus?.emit('node:select', node);
     }
 
     /**
-     * 获取标记半径
+     * 检查节点是否通过筛选
      */
-    getMarkerRadius(node) {
-        return 5 + (node.metadata.importance || 3) * 2;
-    }
+    passesFilters(node) {
+        // 时间范围筛选
+        if (node.time?.year && (node.time.year < this.timeRange.start || node.time.year > this.timeRange.end)) {
+            return false;
+        }
 
-    /**
-     * 获取标记颜色
-     */
-    getMarkerColor(node) {
-        const colors = {
-            politics: '#ff6b6b',
-            technology: '#4ecdc4',
-            culture: '#a855f7',
-            economy: '#22c55e',
-            military: '#f97316'
-        };
-        return colors[node.category.primary] || '#999';
+        // 分类筛选
+        if (this.filters.category && node.category?.primary !== this.filters.category) {
+            return false;
+        }
+
+        // 时期筛选
+        if (this.filters.period) {
+            const period = this.getPeriodForYear(node.time?.year);
+            if (!period || period.name !== this.filters.period) {
+                return false;
+            }
+        }
+
+        // 重要性筛选
+        if ((node.metadata?.importance || 0) < this.filters.minImportance) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -611,39 +652,13 @@ class MapView {
      */
     applyFilters() {
         this.markers.forEach(marker => {
-            const node = marker.node;
-            let visible = true;
-
-            // 分类筛选
-            if (this.filters.category && node.category.primary !== this.filters.category) {
-                visible = false;
-            }
-
-            // 时期筛选
-            if (this.filters.period) {
-                const period = this.getPeriodForYear(node.time.year);
-                if (!period || period.name !== this.filters.period) {
-                    visible = false;
-                }
-            }
-
-            // 重要性筛选
-            if (node.metadata.importance < this.filters.minImportance) {
-                visible = false;
-            }
-
-            // 时间范围筛选
-            if (node.time.year && (node.time.year < this.timeRange.start || node.time.year > this.timeRange.end)) {
-                visible = false;
-            }
-
+            const visible = this.passesFilters(marker.node);
             if (visible) {
                 marker.addTo(this.map);
             } else {
                 marker.remove();
             }
         });
-
         this.updateStats();
     }
 
@@ -740,28 +755,27 @@ class MapView {
     }
 
     /**
+     * 聚焦到节点
+     */
+    focusOnNode(nodeId) {
+        if (!nodeId) return;
+
+        const node = this.app.dataService?.getNode(nodeId);
+        if (!node?.location?.coordinates) return;
+
+        const [lng, lat] = node.location.coordinates;
+        this.flyTo(lat, lng, 8);
+
+        const marker = this.markers.find(m => m.node?.id === nodeId);
+        marker?.openPopup();
+    }
+
+    /**
      * 定位到指定位置
      */
     flyTo(lat, lng, zoom = 10) {
         if (this.map) {
-            this.map.flyTo([lat, lng], zoom, { duration: 1.5 });
-        }
-    }
-
-    /**
-     * 聚焦到节点
-     */
-    focusOnNode(nodeId) {
-        const node = this.app.dataService.getNode(nodeId);
-        if (node && node.location.coordinates) {
-            const [lng, lat] = node.location.coordinates;
-            this.flyTo(lat, lng, 8);
-
-            // 找到并打开对应的标记
-            const marker = this.markers.find(m => m.node.id === nodeId);
-            if (marker) {
-                marker.openPopup();
-            }
+            this.map.flyTo([lat, lng], zoom, { duration: MapView.CONFIG.flyToDuration });
         }
     }
 

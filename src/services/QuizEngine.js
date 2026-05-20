@@ -4,16 +4,47 @@
  */
 
 class QuizEngine {
+    static QUESTION_TYPES = {
+        MULTIPLE_CHOICE: 'multiple-choice',
+        TIMELINE_ORDER: 'timeline-order',
+        MATCHING: 'matching',
+        TRUE_FALSE: 'true-false',
+        FILL_BLANK: 'fill-blank'
+    };
+
+    static PERIODS = [
+        { name: '春秋', start: -770, end: -476 },
+        { name: '战国', start: -475, end: -221 },
+        { name: '秦汉', start: -221, end: 220 },
+        { name: '三国', start: 220, end: 280 },
+        { name: '唐宋', start: 618, end: 1279 },
+        { name: '明清', start: 1368, end: 1911 },
+        { name: '近现代', start: 1911, end: 2024 }
+    ];
+
+    static CATEGORIES = ['politics', 'technology', 'culture', 'economy', 'military'];
+
+    static CATEGORY_NAMES = {
+        politics: '政治',
+        technology: '科技',
+        culture: '文化',
+        economy: '经济',
+        military: '军事'
+    };
+
+    static LOCATIONS = ['长安', '洛阳', '北京', '南京', '开封', '杭州', '成都'];
+
+    static STORAGE_KEY = 'historyTree_quizProgress';
+    static MAX_HISTORY_SIZE = 20;
+
     constructor(app) {
         this.app = app;
         this.name = 'quizEngine';
         this.version = '1.0.0';
 
-        // 当前测验状态
         this.currentQuiz = null;
         this.quizHistory = [];
 
-        // 统计
         this.stats = {
             totalQuizzes: 0,
             totalQuestions: 0,
@@ -21,32 +52,14 @@ class QuizEngine {
             averageScore: 0
         };
 
-        // 问题类型
-        this.questionTypes = {
-            MULTIPLE_CHOICE: 'multiple-choice',
-            TIMELINE_ORDER: 'timeline-order',
-            MATCHING: 'matching',
-            TRUE_FALSE: 'true-false',
-            FILL_BLANK: 'fill-blank'
-        };
+        this.questionTypes = QuizEngine.QUESTION_TYPES;
+        this.periods = [...QuizEngine.PERIODS];
+        this.categories = [...QuizEngine.CATEGORIES];
 
-        // 时期定义
-        this.periods = [
-            { name: '春秋', start: -770, end: -476 },
-            { name: '战国', start: -475, end: -221 },
-            { name: '秦汉', start: -221, end: 220 },
-            { name: '三国', start: 220, end: 280 },
-            { name: '唐宋', start: 618, end: 1279 },
-            { name: '明清', start: 1368, end: 1911 },
-            { name: '近现代', start: 1911, end: 2024 }
-        ];
-
-        // 分类定义
-        this.categories = ['politics', 'technology', 'culture', 'economy', 'military'];
-
-        // UI 组件
         this.uiContainer = null;
         this.isVisible = false;
+        this.quizContent = null;
+        this.quizFooter = null;
     }
 
     /**
@@ -108,18 +121,18 @@ class QuizEngine {
 
         // 过滤掉没有足够信息的节点
         nodes = nodes.filter(node => {
-            return node.name && node.time.year && node.summary;
+            return node.name && node.time?.year && node.summary;
         });
 
         if (filters.category) {
-            nodes = nodes.filter(n => n.category.primary === filters.category);
+            nodes = nodes.filter(n => n.category?.primary === filters.category);
         }
 
         if (filters.period) {
             const periodData = this.periods.find(p => p.name === filters.period);
             if (periodData) {
                 nodes = nodes.filter(n => {
-                    const year = n.time.year;
+                    const year = n.time?.year;
                     return year >= periodData.start && year <= periodData.end;
                 });
             }
@@ -1105,9 +1118,9 @@ class QuizEngine {
      */
     saveProgress() {
         try {
-            localStorage.setItem('historyTree_quizProgress', JSON.stringify({
+            localStorage.setItem(QuizEngine.STORAGE_KEY, JSON.stringify({
                 stats: this.stats,
-                history: this.quizHistory.slice(-20) // 只保存最近20条
+                history: this.quizHistory.slice(-QuizEngine.MAX_HISTORY_SIZE)
             }));
         } catch (e) {
             console.warn('Failed to save quiz progress:', e);
@@ -1119,10 +1132,10 @@ class QuizEngine {
      */
     loadProgress() {
         try {
-            const data = localStorage.getItem('historyTree_quizProgress');
+            const data = localStorage.getItem(QuizEngine.STORAGE_KEY);
             if (data) {
                 const parsed = JSON.parse(data);
-                this.stats = parsed.stats || this.stats;
+                this.stats = { ...this.stats, ...parsed.stats };
                 this.quizHistory = parsed.history || [];
             }
         } catch (e) {
@@ -1172,11 +1185,7 @@ class QuizEngine {
      * 辅助方法：获取地点选项
      */
     getLocationOptions(correct) {
-        const locations = ['长安', '洛阳', '北京', '南京', '开封', '杭州', '成都'];
-        const options = [correct];
-        locations.forEach(loc => {
-            if (loc !== correct) options.push(loc);
-        });
+        const options = [correct, ...QuizEngine.LOCATIONS.filter(loc => loc !== correct)];
         return this.shuffle(options).slice(0, 4);
     }
 
@@ -1184,14 +1193,7 @@ class QuizEngine {
      * 辅助方法：获取分类名称
      */
     getCategoryName(category) {
-        const names = {
-            politics: '政治',
-            technology: '科技',
-            culture: '文化',
-            economy: '经济',
-            military: '军事'
-        };
-        return names[category] || category;
+        return QuizEngine.CATEGORY_NAMES[category] || category;
     }
 
     /**
@@ -1205,10 +1207,8 @@ class QuizEngine {
      * 辅助方法：获取随机其他选项
      */
     getRandomOtherOption(node) {
-        const otherPeriods = this.periods.filter(p => {
-            const year = node.time.year;
-            return !(year >= p.start && year <= p.end);
-        });
+        const year = node.time?.year || 0;
+        const otherPeriods = this.periods.filter(p => !(year >= p.start && year <= p.end));
         return otherPeriods[Math.floor(Math.random() * otherPeriods.length)]?.name || '其他';
     }
 
