@@ -126,6 +126,11 @@ class HistoryTreeApp {
         this.registerView('network', new NetworkView(this));
         this.registerView('cards', new CardView(this));
 
+        // 对比视图
+        if (typeof ComparisonView !== 'undefined') {
+            this.registerView('comparison', new ComparisonView(this));
+        }
+
         console.log('✅ 视图初始化完成');
     }
     
@@ -216,7 +221,21 @@ class HistoryTreeApp {
     getQuizEngine() {
         return this.quizEngine;
     }
+
+    /**
+     * 获取故事生成器
+     */
+    getStoryGenerator() {
+        return this.storyGenerator;
+    }
     
+    /**
+     * 获取合集插件
+     */
+    getCollection() {
+        return this.getPlugin('collection');
+    }
+
     /**
      * 注册插件
      */

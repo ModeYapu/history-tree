@@ -75,6 +75,43 @@ async function initApp() {
             app.quizEngine.showUI({ autoStart: true });
         }
     });
+
+    // 对比视图路由
+    app.router.register('/comparison', () => {
+        app.showView('comparison');
+    });
+
+    app.router.register('/comparison/:id1/:id2', (params) => {
+        app.showView('comparison', { ids: [params.id1, params.id2] });
+    });
+
+    // 故事生成器路由
+    app.router.register('/story', () => {
+        if (app.storyGenerator) {
+            app.storyGenerator.showUI();
+        }
+    });
+
+    app.router.register('/story/:nodeId', (params) => {
+        if (app.storyGenerator) {
+            app.storyGenerator.showUI({ nodeId: params.nodeId });
+        }
+    });
+
+    // 收藏系统路由
+    app.router.register('/collection', () => {
+        const collection = app.getPlugin('collection');
+        if (collection) {
+            collection.showPanel();
+        }
+    });
+
+    app.router.register('/collection/:id', (params) => {
+        const collection = app.getPlugin('collection');
+        if (collection) {
+            collection.showCollection(params.id);
+        }
+    });
     
     app.router.register(Routes.SEARCH, (params, query) => {
         if (query.q) {
@@ -142,6 +179,16 @@ async function initApp() {
                         app.quizEngine.showUI({ autoStart: true });
                     }
                     break;
+                case '7':
+                    e.preventDefault();
+                    app.showView('comparison');
+                    break;
+                case '8':
+                    e.preventDefault();
+                    if (app.storyGenerator) {
+                        app.storyGenerator.showUI();
+                    }
+                    break;
             }
         }
         
@@ -163,6 +210,19 @@ async function initApp() {
             e.preventDefault();
             if (app.quizEngine) {
                 app.quizEngine.showUI({ autoStart: true });
+            }
+        }
+
+        // Ctrl/Cmd + C: 收藏面板
+        if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.shiftKey) {
+            // don't override copy
+        }
+        // Ctrl/Cmd + Shift + C: 收藏面板
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+            e.preventDefault();
+            const collection = app.getPlugin('collection');
+            if (collection) {
+                collection.showPanel();
             }
         }
     });
