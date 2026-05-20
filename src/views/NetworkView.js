@@ -1,5 +1,6 @@
 /**
  * 网络视图 - 关系网络
+ * 支持事件关系网络和人物关系网络
  */
 
 class NetworkView {
@@ -8,14 +9,33 @@ class NetworkView {
         this.container = null;
         this.svg = null;
         this.simulation = null;
-        
+
         this.config = {
             width: window.innerWidth,
             height: window.innerHeight - 180
         };
-        
+
         this.nodes = [];
         this.links = [];
+        this.currentMode = 'event'; // 'event' or 'character'
+        this.activeFilters = new Set();
+
+        // 人物关系类型定义
+        this.characterRelationTypes = {
+            mentor: { name: '师徒', color: '#9333ea', icon: '🎓' },
+            enemy: { name: '敌对', color: '#ef4444', icon: '⚔️' },
+            friend: { name: '友盟', color: '#22c55e', icon: '🤝' },
+            family: { name: '亲属', color: '#f59e0b', icon: '👨‍👩‍👧‍👦' },
+            colleague: { name: '同僚', color: '#3b82f6', icon: '📋' }
+        };
+
+        // 事件关系类型定义
+        this.eventRelationTypes = {
+            causes: { name: '因果', color: '#22c55e', icon: '→' },
+            effects: { name: '影响', color: '#3b82f6', icon: '←' },
+            related: { name: '相关', color: '#9ca3af', icon: '~' },
+            participants: { name: '参与', color: '#f59e0b', icon: '👤' }
+        };
     }
     
     show(options = {}) {

@@ -59,6 +59,13 @@ class HistoryTreeApp {
                 this.quizEngine.init();
                 console.log('✅ 问答引擎初始化完成');
             }
+
+            // 2.2 初始化故事生成器
+            if (typeof StoryGenerator !== 'undefined') {
+                this.storyGenerator = new StoryGenerator(this);
+                this.storyGenerator.init();
+                console.log('✅ 故事生成器初始化完成');
+            }
             
             // 3. 加载数据
             await this.loadData();
@@ -151,6 +158,7 @@ class HistoryTreeApp {
         this.registerPlugin('analytics', new AnalyticsPlugin(this));
         this.registerPlugin('education', new EducationPlugin(this));
         this.registerPlugin('timeline', new TimelinePlugin(this));
+        this.registerPlugin('collection', new CollectionPlugin(this));
         
         console.log('✅ 插件加载完成');
     }
