@@ -105,192 +105,184 @@ class NodeCard {
         const typeStr = typeNames[node.type] || node.type || '';
         const importance = node.metadata?.importance || 3;
         const catColor = this.getCategoryAccent(node.category?.primary);
-        
-        this.card.innerHTML = `
-            <!-- 顶部装饰线 -->
-            <div style="
-                height: 3px;
-                background: linear-gradient(90deg, transparent, ${catColor}, transparent);
-                border-radius: 16px 16px 0 0;
-            "></div>
-            
-            <!-- 关闭按钮 -->
-            <button class="close-btn" style="
-                position: absolute;
-                top: 12px;
-                right: 12px;
-                background: rgba(212, 168, 83, 0.08);
-                border: 1px solid rgba(212, 168, 83, 0.15);
-                color: #8B7355;
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                font-size: 16px;
-                cursor: pointer;
-                transition: all 0.2s;
-                z-index: 1;
-            " onmouseover="this.style.background='rgba(212,168,83,0.2)'" onmouseout="this.style.background='rgba(212,168,83,0.08)'" onclick="this.closest('.node-card-overlay').style.display='none'">×</button>
-            
-            <!-- 头部 -->
-            <div style="padding: 28px 28px 0 28px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
-                    <span style="font-size: 13px; color: #8B7355; background: rgba(212,168,83,0.08); border: 1px solid rgba(212,168,83,0.12); padding: 3px 10px; border-radius: 10px;">${typeStr}</span>
-                    ${catStr ? `<span style="font-size: 13px; color: ${catColor}; background: rgba(212,168,83,0.08); border: 1px solid rgba(212,168,83,0.12); padding: 3px 10px; border-radius: 10px;">${catStr}</span>` : ''}
-                </div>
-                
-                <h2 style="
-                    margin: 0 0 12px 0;
-                    font-size: 24px;
-                    font-weight: 700;
-                    color: #F0D68A;
-                    letter-spacing: 1px;
-                    line-height: 1.3;
-                ">${node.name}</h2>
-                
-                <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: #8B7355;">
-                    ${timeStr ? `<span>📅 ${timeStr}</span>` : ''}
-                    ${periodStr ? `<span>📜 ${periodStr}</span>` : ''}
-                    ${locationStr ? `<span>📍 ${locationStr}</span>` : ''}
-                </div>
-            </div>
-            
-            <!-- 分隔线 -->
-            <div style="
-                margin: 18px 28px;
-                height: 1px;
-                background: linear-gradient(90deg, transparent, rgba(212,168,83,0.15), transparent);
-            "></div>
-            
-            <!-- 正文 -->
-            <div style="padding: 0 28px;">
-                ${(node.summary || node.description) ? `
-                    <div style="margin-bottom: 18px;">
-                        <h3 style="margin: 0 0 8px 0; font-size: 15px; color: #C9A96E; letter-spacing: 1px;">📖 概述</h3>
-                        <p style="margin: 0; color: #A89070; line-height: 1.9; font-size: 14px;">${node.summary || node.description}</p>
-                    </div>
-                ` : ''}
-                
-                ${node.description && node.summary ? `
-                    <div style="margin-bottom: 18px;">
-                        <h3 style="margin: 0 0 8px 0; font-size: 15px; color: #C9A96E; letter-spacing: 1px;">📝 详述</h3>
-                        <p style="margin: 0; color: #A89070; line-height: 1.9; font-size: 14px;">${node.description}</p>
-                    </div>
-                ` : ''}
-                
-                ${node.content?.significance ? `
-                    <div style="margin-bottom: 18px;">
-                        <h3 style="margin: 0 0 8px 0; font-size: 15px; color: #C9A96E; letter-spacing: 1px;">✨ 历史意义</h3>
-                        <p style="margin: 0; color: #A89070; line-height: 1.9; font-size: 14px;">${node.content.significance}</p>
-                    </div>
-                ` : ''}
-                
-                ${node.content?.consequences?.length > 0 ? `
-                    <div style="margin-bottom: 18px;">
-                        <h3 style="margin: 0 0 8px 0; font-size: 15px; color: #C9A96E; letter-spacing: 1px;">🔗 影响</h3>
-                        <ul style="margin: 0; padding-left: 18px; color: #A89070; line-height: 2; font-size: 14px;">
-                            ${node.content.consequences.map(c => `<li>${c}</li>`).join('')}
-                        </ul>
-                    </div>
-                ` : ''}
-            </div>
-            
-            <!-- 相关推荐 -->
-            ${this.relatedNodes.length > 0 ? `
-                <div style="padding: 0 28px;">
-                    <h3 style="margin: 0 0 10px 0; font-size: 15px; color: #C9A96E; letter-spacing: 1px;">📎 相关推荐</h3>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        ${this.relatedNodes.map(rn => `
-                            <div class="related-node" data-id="${rn.id}" style="
-                                background: rgba(212,168,83,0.05);
-                                border: 1px solid rgba(212,168,83,0.1);
-                                border-radius: 10px;
-                                padding: 10px 14px;
-                                cursor: pointer;
-                                transition: all 0.2s;
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                            " onmouseover="this.style.borderColor='rgba(212,168,83,0.3)'" onmouseout="this.style.borderColor='rgba(212,168,83,0.1)'">
-                                <div>
-                                    <div style="font-size: 14px; color: #F0D68A;">${rn.name}</div>
-                                    <div style="font-size: 12px; color: #8B7355; margin-top: 2px;">${rn.time?.displayDate || rn.time?.period || ''}${rn.location?.name ? ' · ' + rn.location.name : ''}</div>
-                                </div>
-                                <span style="color: #8B7355; font-size: 12px;">→</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            <!-- 标签 -->
-            ${node.category?.tags?.length > 0 ? `
-                <div style="padding: 16px 28px 0 28px;">
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-                        ${node.category.tags.map(tag => `
-                            <span style="
-                                background: rgba(212,168,83,0.06);
-                                border: 1px solid rgba(212,168,83,0.12);
-                                color: #8B7355;
-                                padding: 3px 10px;
-                                border-radius: 12px;
-                                font-size: 12px;
-                            ">#${tag}</span>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            <!-- 底部 -->
-            <div style="
-                margin: 18px 28px 0 28px;
-                padding: 14px 0 18px 0;
-                border-top: 1px solid rgba(212,168,83,0.1);
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            ">
-                <div style="font-size: 12px; color: #6B5D4D;">
-                    <span>👁 ${node.metadata?.views || 0}</span>
-                    <span style="margin-left: 12px;">${'⭐'.repeat(Math.min(importance, 5))}${'☆'.repeat(Math.max(5 - importance, 0))}</span>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button onclick="
-                        const s = this.querySelector('.like-count');
-                        const v = parseInt(s.textContent) + 1;
-                        s.textContent = v;
-                        this.style.color = '#D4A853';
-                    " style="
-                        background: rgba(212,168,83,0.08);
-                        border: 1px solid rgba(212,168,83,0.15);
-                        color: #8B7355;
-                        padding: 6px 14px;
-                        border-radius: 14px;
-                        cursor: pointer;
-                        font-family: 'Noto Serif SC', serif;
-                        font-size: 12px;
-                        transition: all 0.2s;
-                    " onmouseover="this.style.borderColor='rgba(212,168,83,0.3)'" onmouseout="this.style.borderColor='rgba(212,168,83,0.15)'">❤️ <span class="like-count">${node.metadata?.likes || 0}</span></button>
-                    <button onclick="
-                        if(navigator.clipboard) {
-                            navigator.clipboard.writeText(window.location.href + '?node=${node.id}');
-                            this.textContent = '✅ 已复制';
-                            setTimeout(() => this.textContent = '📤 分享', 1500);
-                        }
-                    " style="
-                        background: rgba(212,168,83,0.08);
-                        border: 1px solid rgba(212,168,83,0.15);
-                        color: #8B7355;
-                        padding: 6px 14px;
-                        border-radius: 14px;
-                        cursor: pointer;
-                        font-family: 'Noto Serif SC', serif;
-                        font-size: 12px;
-                        transition: all 0.2s;
-                    " onmouseover="this.style.borderColor='rgba(212,168,83,0.3)'" onmouseout="this.style.borderColor='rgba(212,168,83,0.15)'">📤 分享</button>
-                </div>
-            </div>
+
+        // 清空现有内容
+        this.card.innerHTML = '';
+
+        // 顶部装饰线
+        const topLine = document.createElement('div');
+        topLine.style.cssText = `
+            height: 3px;
+            background: linear-gradient(90deg, transparent, ${catColor}, transparent);
+            border-radius: 16px 16px 0 0;
         `;
-        
+        this.card.appendChild(topLine);
+
+        // 关闭按钮
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.style.cssText = `
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(212, 168, 83, 0.08);
+            border: 1px solid rgba(212, 168, 83, 0.15);
+            color: #8B7355;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 1;
+        `;
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('mouseenter', () => { closeBtn.style.background = 'rgba(212,168,83,0.2)'; });
+        closeBtn.addEventListener('mouseleave', () => { closeBtn.style.background = 'rgba(212,168,83,0.08)'; });
+        closeBtn.addEventListener('click', () => { this.container.style.display = 'none'; });
+        this.card.appendChild(closeBtn);
+
+        // 头部
+        const header = document.createElement('div');
+        header.style.cssText = 'padding: 28px 28px 0 28px;';
+
+        const tagsDiv = document.createElement('div');
+        tagsDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-bottom: 14px;';
+
+        const typeTag = this.createTag(typeStr, '#8B7355');
+        tagsDiv.appendChild(typeTag);
+
+        if (catStr) {
+            const catTag = this.createTag(catStr, catColor);
+            tagsDiv.appendChild(catTag);
+        }
+
+        const title = document.createElement('h2');
+        title.style.cssText = `
+            margin: 0 0 12px 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: #F0D68A;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        `;
+        title.textContent = node.name;
+
+        const metaDiv = document.createElement('div');
+        metaDiv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: #8B7355;';
+
+        if (timeStr) {
+            const timeSpan = document.createElement('span');
+            timeSpan.textContent = `📅 ${timeStr}`;
+            metaDiv.appendChild(timeSpan);
+        }
+        if (periodStr) {
+            const periodSpan = document.createElement('span');
+            periodSpan.textContent = `📜 ${periodStr}`;
+            metaDiv.appendChild(periodSpan);
+        }
+        if (locationStr) {
+            const locationSpan = document.createElement('span');
+            locationSpan.textContent = `📍 ${locationStr}`;
+            metaDiv.appendChild(locationSpan);
+        }
+
+        header.appendChild(tagsDiv);
+        header.appendChild(title);
+        header.appendChild(metaDiv);
+        this.card.appendChild(header);
+
+        // 分隔线
+        const divider = document.createElement('div');
+        divider.style.cssText = `
+            margin: 18px 28px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212,168,83,0.15), transparent);
+        `;
+        this.card.appendChild(divider);
+
+        // 正文
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = 'padding: 0 28px;';
+
+        if (node.summary || node.description) {
+            contentDiv.appendChild(this.createSection('📖 概述', node.summary || node.description));
+        }
+
+        if (node.description && node.summary) {
+            contentDiv.appendChild(this.createSection('📝 详述', node.description));
+        }
+
+        if (node.content?.significance) {
+            contentDiv.appendChild(this.createSection('✨ 历史意义', node.content.significance));
+        }
+
+        if (node.content?.consequences?.length > 0) {
+            const section = this.createSection('🔗 影响', '');
+            const ul = document.createElement('ul');
+            ul.style.cssText = 'margin: 0; padding-left: 18px; color: #A89070; line-height: 2; font-size: 14px;';
+            node.content.consequences.forEach(c => {
+                const li = document.createElement('li');
+                li.textContent = c;
+                ul.appendChild(li);
+            });
+            section.appendChild(ul);
+            contentDiv.appendChild(section);
+        }
+
+        this.card.appendChild(contentDiv);
+
+        // 相关推荐
+        if (this.relatedNodes.length > 0) {
+            const relatedDiv = document.createElement('div');
+            relatedDiv.style.cssText = 'padding: 0 28px;';
+
+            const relatedTitle = document.createElement('h3');
+            relatedTitle.style.cssText = 'margin: 0 0 10px 0; font-size: 15px; color: #C9A96E; letter-spacing: 1px;';
+            relatedTitle.textContent = '📎 相关推荐';
+            relatedDiv.appendChild(relatedTitle);
+
+            const relatedList = document.createElement('div');
+            relatedList.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
+
+            this.relatedNodes.forEach(rn => {
+                const item = this.createRelatedNodeItem(rn);
+                relatedList.appendChild(item);
+            });
+
+            relatedDiv.appendChild(relatedList);
+            this.card.appendChild(relatedDiv);
+        }
+
+        // 标签
+        if (node.category?.tags?.length > 0) {
+            const tagsContainer = document.createElement('div');
+            tagsContainer.style.cssText = 'padding: 16px 28px 0 28px;';
+            const tagsFlex = document.createElement('div');
+            tagsFlex.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px;';
+
+            node.category.tags.forEach(tag => {
+                const tagEl = document.createElement('span');
+                tagEl.style.cssText = `
+                    background: rgba(212,168,83,0.06);
+                    border: 1px solid rgba(212,168,83,0.12);
+                    color: #8B7355;
+                    padding: 3px 10px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                `;
+                tagEl.textContent = `#${tag}`;
+                tagsFlex.appendChild(tagEl);
+            });
+
+            tagsContainer.appendChild(tagsFlex);
+            this.card.appendChild(tagsContainer);
+        }
+
+        // 底部
+        const footer = this.createFooter(node, importance);
+        this.card.appendChild(footer);
+
         // 相关节点点击跳转
         this.card.querySelectorAll('.related-node').forEach(el => {
             el.addEventListener('click', () => {
@@ -301,6 +293,179 @@ class NodeCard {
                 }
             });
         });
+    }
+
+    /**
+     * 创建标签元素
+     */
+    createTag(text, color) {
+        const span = document.createElement('span');
+        span.style.cssText = `
+            font-size: 13px;
+            color: ${color};
+            background: rgba(212,168,83,0.08);
+            border: 1px solid rgba(212,168,83,0.12);
+            padding: 3px 10px;
+            border-radius: 10px;
+        `;
+        span.textContent = text;
+        return span;
+    }
+
+    /**
+     * 创建内容区块
+     */
+    createSection(title, content) {
+        const div = document.createElement('div');
+        div.style.cssText = 'margin-bottom: 18px;';
+
+        const h3 = document.createElement('h3');
+        h3.style.cssText = 'margin: 0 0 8px 0; font-size: 15px; color: #C9A96E; letter-spacing: 1px;';
+        h3.textContent = title;
+        div.appendChild(h3);
+
+        if (content) {
+            const p = document.createElement('p');
+            p.style.cssText = 'margin: 0; color: #A89070; line-height: 1.9; font-size: 14px;';
+            p.textContent = content;
+            div.appendChild(p);
+        }
+
+        return div;
+    }
+
+    /**
+     * 创建相关节点项
+     */
+    createRelatedNodeItem(node) {
+        const item = document.createElement('div');
+        item.className = 'related-node';
+        item.dataset.id = node.id;
+        item.style.cssText = `
+            background: rgba(212,168,83,0.05);
+            border: 1px solid rgba(212,168,83,0.1);
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        `;
+
+        item.addEventListener('mouseenter', () => { item.style.borderColor = 'rgba(212,168,83,0.3)'; });
+        item.addEventListener('mouseleave', () => { item.style.borderColor = 'rgba(212,168,83,0.1)'; });
+
+        const leftDiv = document.createElement('div');
+
+        const nameDiv = document.createElement('div');
+        nameDiv.style.cssText = 'font-size: 14px; color: #F0D68A;';
+        nameDiv.textContent = node.name;
+
+        const detailDiv = document.createElement('div');
+        detailDiv.style.cssText = 'font-size: 12px; color: #8B7355; margin-top: 2px;';
+        const timeText = node.time?.displayDate || node.time?.period || '';
+        const locationText = node.location?.name ? ` · ${node.location.name}` : '';
+        detailDiv.textContent = `${timeText}${locationText}`;
+
+        leftDiv.appendChild(nameDiv);
+        leftDiv.appendChild(detailDiv);
+
+        const arrow = document.createElement('span');
+        arrow.style.cssText = 'color: #8B7355; font-size: 12px;';
+        arrow.textContent = '→';
+
+        item.appendChild(leftDiv);
+        item.appendChild(arrow);
+
+        return item;
+    }
+
+    /**
+     * 创建底部
+     */
+    createFooter(node, importance) {
+        const footer = document.createElement('div');
+        footer.style.cssText = `
+            margin: 18px 28px 0 28px;
+            padding: 14px 0 18px 0;
+            border-top: 1px solid rgba(212,168,83,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        `;
+
+        const statsDiv = document.createElement('div');
+        statsDiv.style.cssText = 'font-size: 12px; color: #6B5D4D;';
+
+        const viewsSpan = document.createElement('span');
+        viewsSpan.textContent = `👁 ${node.metadata?.views || 0}`;
+
+        const starsSpan = document.createElement('span');
+        starsSpan.style.marginLeft = '12px';
+        starsSpan.textContent = `${'⭐'.repeat(Math.min(importance, 5))}${'☆'.repeat(Math.max(5 - importance, 0))}`;
+
+        statsDiv.appendChild(viewsSpan);
+        statsDiv.appendChild(starsSpan);
+
+        const buttonsDiv = document.createElement('div');
+        buttonsDiv.style.cssText = 'display: flex; gap: 8px;';
+
+        const likeBtn = document.createElement('button');
+        likeBtn.style.cssText = `
+            background: rgba(212,168,83,0.08);
+            border: 1px solid rgba(212,168,83,0.15);
+            color: #8B7355;
+            padding: 6px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 12px;
+            transition: all 0.2s;
+        `;
+        const likeCount = document.createElement('span');
+        likeCount.className = 'like-count';
+        likeCount.textContent = node.metadata?.likes || 0;
+        likeBtn.appendChild(document.createTextNode('❤️ '));
+        likeBtn.appendChild(likeCount);
+        likeBtn.addEventListener('click', () => {
+            const v = parseInt(likeCount.textContent) + 1;
+            likeCount.textContent = v;
+            likeBtn.style.color = '#D4A853';
+        });
+        likeBtn.addEventListener('mouseenter', () => { likeBtn.style.borderColor = 'rgba(212,168,83,0.3)'; });
+        likeBtn.addEventListener('mouseleave', () => { likeBtn.style.borderColor = 'rgba(212,168,83,0.15)'; });
+
+        const shareBtn = document.createElement('button');
+        shareBtn.style.cssText = `
+            background: rgba(212,168,83,0.08);
+            border: 1px solid rgba(212,168,83,0.15);
+            color: #8B7355;
+            padding: 6px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 12px;
+            transition: all 0.2s;
+        `;
+        shareBtn.textContent = '📤 分享';
+        shareBtn.addEventListener('click', () => {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(window.location.href + `?node=${node.id}`);
+                shareBtn.textContent = '✅ 已复制';
+                setTimeout(() => { shareBtn.textContent = '📤 分享'; }, 1500);
+            }
+        });
+        shareBtn.addEventListener('mouseenter', () => { shareBtn.style.borderColor = 'rgba(212,168,83,0.3)'; });
+        shareBtn.addEventListener('mouseleave', () => { shareBtn.style.borderColor = 'rgba(212,168,83,0.15)'; });
+
+        buttonsDiv.appendChild(likeBtn);
+        buttonsDiv.appendChild(shareBtn);
+
+        footer.appendChild(statsDiv);
+        footer.appendChild(buttonsDiv);
+
+        return footer;
     }
     
     getCategoryAccent(category) {

@@ -26,55 +26,103 @@ class EnhancedAIChat {
   render() {
     this.container = document.createElement('div');
     this.container.className = 'ai-chat-panel enhanced';
-    
-    this.container.innerHTML = `
-      <div class="chat-header">
-        <div class="header-left">
-          <h3>🤖 历史AI助手</h3>
-          <span class="mcp-status ${this.mcpClient?.connected ? 'connected' : 'offline'}">
-            ${this.mcpClient?.connected ? 'MCP已连接' : '离线模式'}
-          </span>
-        </div>
-        <button class="close-btn">×</button>
-      </div>
-      
-      <div class="chat-messages">
-        <div class="message ai-message">
-          <div class="message-content">
-            你好！我是历史AI助手，我可以帮你：
-          </div>
-          <ul class="capabilities">
-            <li>🔍 搜索历史事件和人物</li>
-            <li>🤖 AI分析历史关联</li>
-            <li>❓ 回答历史问题</li>
-            <li>📊 生成时间线</li>
-            <li>💡 推荐相关内容</li>
-            <li>🔄 对比历史事件</li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="quick-actions">
-        <button class="action-btn" data-action="search">
-          🔍 搜索
-        </button>
-        <button class="action-btn" data-action="timeline">
-          📊 时间线
-        </button>
-        <button class="action-btn" data-action="recommend">
-          💡 推荐
-        </button>
-        <button class="action-btn" data-action="analyze">
-          🤖 分析
-        </button>
-      </div>
-      
-      <div class="chat-input">
-        <input type="text" class="message-input" placeholder="问我任何历史问题..." />
-        <button class="send-btn">发送</button>
-      </div>
-    `;
-    
+
+    // 安全地创建头部
+    const header = document.createElement('div');
+    header.className = 'chat-header';
+
+    const headerLeft = document.createElement('div');
+    headerLeft.className = 'header-left';
+
+    const title = document.createElement('h3');
+    title.textContent = '🤖 历史AI助手';
+
+    const statusSpan = document.createElement('span');
+    statusSpan.className = `mcp-status ${this.mcpClient?.connected ? 'connected' : 'offline'}`;
+    statusSpan.textContent = this.mcpClient?.connected ? 'MCP已连接' : '离线模式';
+
+    headerLeft.appendChild(title);
+    headerLeft.appendChild(statusSpan);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'close-btn';
+    closeBtn.textContent = '×';
+
+    header.appendChild(headerLeft);
+    header.appendChild(closeBtn);
+
+    // 消息容器
+    const messagesDiv = document.createElement('div');
+    messagesDiv.className = 'chat-messages';
+
+    // 欢迎消息
+    const welcomeMsg = document.createElement('div');
+    welcomeMsg.className = 'message ai-message';
+
+    const welcomeContent = document.createElement('div');
+    welcomeContent.className = 'message-content';
+    welcomeContent.textContent = '你好！我是历史AI助手，我可以帮你：';
+
+    const capabilities = document.createElement('ul');
+    capabilities.className = 'capabilities';
+    const capabilityItems = [
+      '🔍 搜索历史事件和人物',
+      '🤖 AI分析历史关联',
+      '❓ 回答历史问题',
+      '📊 生成时间线',
+      '💡 推荐相关内容',
+      '🔄 对比历史事件'
+    ];
+    capabilityItems.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item;
+      capabilities.appendChild(li);
+    });
+
+    welcomeMsg.appendChild(welcomeContent);
+    welcomeMsg.appendChild(capabilities);
+    messagesDiv.appendChild(welcomeMsg);
+
+    // 快捷操作
+    const quickActions = document.createElement('div');
+    quickActions.className = 'quick-actions';
+
+    const actions = [
+      { action: 'search', icon: '🔍', label: '搜索' },
+      { action: 'timeline', icon: '📊', label: '时间线' },
+      { action: 'recommend', icon: '💡', label: '推荐' },
+      { action: 'analyze', icon: '🤖', label: '分析' }
+    ];
+
+    actions.forEach(({ action, icon, label }) => {
+      const btn = document.createElement('button');
+      btn.className = 'action-btn';
+      btn.dataset.action = action;
+      btn.textContent = `${icon} ${label}`;
+      quickActions.appendChild(btn);
+    });
+
+    // 输入区域
+    const inputDiv = document.createElement('div');
+    inputDiv.className = 'chat-input';
+
+    const messageInput = document.createElement('input');
+    messageInput.type = 'text';
+    messageInput.className = 'message-input';
+    messageInput.placeholder = '问我任何历史问题...';
+
+    const sendBtn = document.createElement('button');
+    sendBtn.className = 'send-btn';
+    sendBtn.textContent = '发送';
+
+    inputDiv.appendChild(messageInput);
+    inputDiv.appendChild(sendBtn);
+
+    this.container.appendChild(header);
+    this.container.appendChild(messagesDiv);
+    this.container.appendChild(quickActions);
+    this.container.appendChild(inputDiv);
+
     this.attachEventListeners();
     return this.container;
   }
@@ -353,16 +401,25 @@ class EnhancedAIChat {
    */
   addMessage(type, content) {
     const messagesContainer = this.container.querySelector('.chat-messages');
-    
+
     const messageEl = document.createElement('div');
     messageEl.className = `message ${type}-message`;
-    messageEl.innerHTML = `
-      <div class="message-content">${this.formatMessage(content)}</div>
-    `;
-    
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+
+    // 安全地设置内容（允许基本的markdown格式）
+    const formattedContent = this.formatMessage(content);
+    if (type === 'error') {
+      contentDiv.textContent = content;
+    } else {
+      contentDiv.innerHTML = formattedContent;
+    }
+
+    messageEl.appendChild(contentDiv);
     messagesContainer.appendChild(messageEl);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
+
     this.messages.push({ type, content, timestamp: Date.now() });
   }
 
@@ -382,11 +439,20 @@ class EnhancedAIChat {
   showTyping() {
     this.isTyping = true;
     const messagesContainer = this.container.querySelector('.chat-messages');
-    
+
     const typingEl = document.createElement('div');
     typingEl.className = 'message ai-message typing';
-    typingEl.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-    
+
+    const indicator = document.createElement('div');
+    indicator.className = 'typing-indicator';
+
+    // 添加三个圆点
+    for (let i = 0; i < 3; i++) {
+      const span = document.createElement('span');
+      indicator.appendChild(span);
+    }
+
+    typingEl.appendChild(indicator);
     messagesContainer.appendChild(typingEl);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }

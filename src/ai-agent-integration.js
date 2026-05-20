@@ -26,15 +26,15 @@ script2.onload = async function() {
   try {
     const aiChat = new EnhancedAIChat(app || {});
     await aiChat.initialize();
-    
+
     // 5. 添加到页面
     document.body.appendChild(aiChat.render());
-    
+
     // 6. 添加触发按钮（如果不存在）
     if (!document.querySelector('.ai-chat-trigger')) {
       const triggerBtn = document.createElement('button');
       triggerBtn.className = 'ai-chat-trigger';
-      triggerBtn.innerHTML = '🤖';
+      triggerBtn.textContent = '🤖';
       triggerBtn.style.cssText = `
         position: fixed;
         right: 20px;
@@ -51,33 +51,33 @@ script2.onload = async function() {
         z-index: 1000;
         transition: all 0.3s ease;
       `;
-      
+
       triggerBtn.addEventListener('mouseenter', () => {
         triggerBtn.style.transform = 'scale(1.1)';
         triggerBtn.style.boxShadow = '0 6px 30px rgba(102, 126, 234, 0.6)';
       });
-      
+
       triggerBtn.addEventListener('mouseleave', () => {
         triggerBtn.style.transform = 'scale(1)';
         triggerBtn.style.boxShadow = '0 4px 20px rgba(102, 126, 234, 0.4)';
       });
-      
+
       triggerBtn.addEventListener('click', () => {
         aiChat.toggle();
       });
-      
+
       document.body.appendChild(triggerBtn);
     }
-    
+
     // 7. 保存到全局
     window.aiChat = aiChat;
-    
+
     console.log('✅ AI Agent 已就绪');
     console.log('💬 点击右下角🤖按钮开始对话');
-    
+
   } catch (error) {
     console.error('❌ AI Agent 初始化失败:', error);
-    
+
     // 显示错误提示
     const errorDiv = document.createElement('div');
     errorDiv.className = 'ai-error-toast';
@@ -93,13 +93,25 @@ script2.onload = async function() {
       z-index: 10000;
       max-width: 300px;
     `;
-    errorDiv.innerHTML = `
-      <div style="font-weight: bold; margin-bottom: 5px;">⚠️ AI Agent 初始化失败</div>
-      <div style="font-size: 14px;">${error.message}</div>
-      <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;">请检查API配置和服务状态</div>
-    `;
+
+    const titleDiv = document.createElement('div');
+    titleDiv.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
+    titleDiv.textContent = '⚠️ AI Agent 初始化失败';
+
+    const msgDiv = document.createElement('div');
+    msgDiv.style.cssText = 'font-size: 14px;';
+    msgDiv.textContent = error.message;
+
+    const hintDiv = document.createElement('div');
+    hintDiv.style.cssText = 'font-size: 12px; margin-top: 5px; opacity: 0.9;';
+    hintDiv.textContent = '请检查API配置和服务状态';
+
+    errorDiv.appendChild(titleDiv);
+    errorDiv.appendChild(msgDiv);
+    errorDiv.appendChild(hintDiv);
+
     document.body.appendChild(errorDiv);
-    
+
     setTimeout(() => errorDiv.remove(), 5000);
   }
 };

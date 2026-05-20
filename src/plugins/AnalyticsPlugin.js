@@ -166,36 +166,52 @@ ${stats.geography.slice(0, 10).map((item, i) =>
             align-items: center;
             z-index: 2000;
         `;
-        
-        modal.innerHTML = `
-            <div style="
-                background: white;
-                border-radius: 16px;
-                padding: 30px;
-                max-width: 900px;
-                max-height: 80vh;
-                overflow-y: auto;
-            ">
-                <h2 style="margin: 0 0 20px 0;">📊 数据分析</h2>
-                <pre style="
-                    background: #f5f5f5;
-                    padding: 20px;
-                    border-radius: 8px;
-                    font-size: 12px;
-                    overflow-x: auto;
-                ">${JSON.stringify(stats, null, 2)}</pre>
-                <button onclick="this.parentElement.parentElement.remove()" style="
-                    margin-top: 20px;
-                    padding: 10px 30px;
-                    background: #667eea;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    cursor: pointer;
-                ">关闭</button>
-            </div>
+
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = `
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
         `;
-        
+
+        const h2 = document.createElement('h2');
+        h2.style.cssText = 'margin: 0 0 20px 0;';
+        h2.textContent = '📊 数据分析';
+
+        const pre = document.createElement('pre');
+        pre.style.cssText = `
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 12px;
+            overflow-x: auto;
+        `;
+        pre.textContent = JSON.stringify(stats, null, 2);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '关闭';
+        closeBtn.style.cssText = `
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        `;
+        closeBtn.addEventListener('click', () => {
+            modal.remove();
+        });
+
+        contentDiv.appendChild(h2);
+        contentDiv.appendChild(pre);
+        contentDiv.appendChild(closeBtn);
+
+        modal.appendChild(contentDiv);
+
         document.body.appendChild(modal);
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.remove();

@@ -163,35 +163,72 @@ function showWelcomeMessage() {
         max-width: 300px;
         animation: slideIn 0.5s ease;
     `;
-    
-    notification.innerHTML = `
-        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-            <span style="font-size: 24px; margin-right: 10px;">🌳</span>
-            <strong style="font-size: 16px;">欢迎使用历史之树 v4.0</strong>
-        </div>
-        <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.6;">
-            这是一个全新的历史探索平台，支持多种视图模式和智能助手。
-        </p>
-        <div style="margin-top: 15px; font-size: 12px; color: #999;">
-            <div>快捷键：</div>
-            <div>• Ctrl+1-5: 切换视图</div>
-            <div>• Ctrl+K: 搜索</div>
-            <div>• Ctrl+E: 导出</div>
-        </div>
-        <button onclick="this.parentElement.remove()" style="
-            margin-top: 15px;
-            width: 100%;
-            padding: 8px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        ">开始探索</button>
+
+    // 头部
+    const headerDiv = document.createElement('div');
+    headerDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 10px;';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.style.cssText = 'font-size: 24px; margin-right: 10px;';
+    iconSpan.textContent = '🌳';
+
+    const titleStrong = document.createElement('strong');
+    titleStrong.style.cssText = 'font-size: 16px;';
+    titleStrong.textContent = '欢迎使用历史之树 v4.0';
+
+    headerDiv.appendChild(iconSpan);
+    headerDiv.appendChild(titleStrong);
+
+    // 描述
+    const p = document.createElement('p');
+    p.style.cssText = 'margin: 0; color: #666; font-size: 14px; line-height: 1.6;';
+    p.textContent = '这是一个全新的历史探索平台，支持多种视图模式和智能助手。';
+
+    // 快捷键列表
+    const shortcutsDiv = document.createElement('div');
+    shortcutsDiv.style.cssText = 'margin-top: 15px; font-size: 12px; color: #999;';
+
+    const shortcutsLabel = document.createElement('div');
+    shortcutsLabel.textContent = '快捷键：';
+
+    const shortcut1 = document.createElement('div');
+    shortcut1.textContent = '• Ctrl+1-5: 切换视图';
+
+    const shortcut2 = document.createElement('div');
+    shortcut2.textContent = '• Ctrl+K: 搜索';
+
+    const shortcut3 = document.createElement('div');
+    shortcut3.textContent = '• Ctrl+E: 导出';
+
+    shortcutsDiv.appendChild(shortcutsLabel);
+    shortcutsDiv.appendChild(shortcut1);
+    shortcutsDiv.appendChild(shortcut2);
+    shortcutsDiv.appendChild(shortcut3);
+
+    // 按钮
+    const button = document.createElement('button');
+    button.textContent = '开始探索';
+    button.style.cssText = `
+        margin-top: 15px;
+        width: 100%;
+        padding: 8px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
     `;
-    
+    button.addEventListener('click', () => {
+        notification.remove();
+    });
+
+    notification.appendChild(headerDiv);
+    notification.appendChild(p);
+    notification.appendChild(shortcutsDiv);
+    notification.appendChild(button);
+
     document.body.appendChild(notification);
-    
+
     // 3秒后自动关闭
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.5s ease';

@@ -27,99 +27,157 @@ class PhilosophyUI {
             display: flex;
             flex-direction: column;
         `;
-        
-        this.container.innerHTML = `
-            <div class="philosophy-header" style="
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                padding: 20px;
-                color: white;
-            ">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h2 style="margin: 0; font-size: 20px;">🧠 哲学思辨</h2>
-                        <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.9;">深度分析与哲学思辨</p>
-                    </div>
-                    <button class="close-btn" style="
-                        background: rgba(255,255,255,0.2);
-                        border: none;
-                        color: white;
-                        width: 30px;
-                        height: 30px;
-                        border-radius: 50%;
-                        cursor: pointer;
-                        font-size: 18px;
-                    ">×</button>
-                </div>
-            </div>
-            
-            <div class="philosophy-content" style="
-                flex: 1;
-                overflow-y: auto;
-                padding: 20px;
-                color: white;
-            ">
-                <div class="analysis-section">
-                    <h3 style="font-size: 16px; margin: 0 0 15px 0; color: #667eea;">
-                        🔍 关联发现
-                    </h3>
-                    <div class="discovery-content"></div>
-                </div>
-                
-                <div class="analysis-section" style="margin-top: 30px;">
-                    <h3 style="font-size: 16px; margin: 0 0 15px 0; color: #a855f7;">
-                        💭 哲学思辨
-                    </h3>
-                    <div class="philosophy-content-inner"></div>
-                </div>
-                
-                <div class="analysis-section" style="margin-top: 30px;">
-                    <h3 style="font-size: 16px; margin: 0 0 15px 0; color: #22c55e;">
-                        ⚖️ 多元视角
-                    </h3>
-                    <div class="perspectives-content"></div>
-                </div>
-                
-                <div class="analysis-section" style="margin-top: 30px;">
-                    <h3 style="font-size: 16px; margin: 0 0 15px 0; color: #f59e0b;">
-                        💡 核心洞察
-                    </h3>
-                    <div class="wisdom-content"></div>
-                </div>
-            </div>
-            
-            <div class="philosophy-input" style="
-                padding: 15px;
-                background: rgba(0,0,0,0.3);
-                border-top: 1px solid rgba(255,255,255,0.1);
-            ">
-                <input type="text" class="question-input" placeholder="提出哲学问题..." style="
-                    width: 100%;
-                    padding: 12px 15px;
-                    background: rgba(255,255,255,0.1);
-                    border: 1px solid rgba(255,255,255,0.2);
-                    border-radius: 8px;
-                    color: white;
-                    font-size: 14px;
-                    outline: none;
-                " />
-            </div>
-        `;
-        
+
+        // 创建头部
+        const header = this.createHeader();
+        this.container.appendChild(header);
+
+        // 创建内容区域
+        const content = this.createContent();
+        this.container.appendChild(content);
+
+        // 创建输入区域
+        const inputDiv = this.createInput();
+        this.container.appendChild(inputDiv);
+
         // 绑定事件
         this.container.querySelector('.close-btn').addEventListener('click', () => {
             this.hide();
         });
-        
+
         this.container.querySelector('.question-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 this.askQuestion(e.target.value);
                 e.target.value = '';
             }
         });
-        
+
         document.body.appendChild(this.container);
-        
+
         return this.container;
+    }
+
+    /**
+     * 创建头部
+     */
+    createHeader() {
+        const header = document.createElement('div');
+        header.className = 'philosophy-header';
+        header.style.cssText = `
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: white;
+        `;
+
+        const headerDiv = document.createElement('div');
+        headerDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center;';
+
+        const titleDiv = document.createElement('div');
+        const h2 = document.createElement('h2');
+        h2.style.cssText = 'margin: 0; font-size: 20px;';
+        h2.textContent = '🧠 哲学思辨';
+
+        const p = document.createElement('p');
+        p.style.cssText = 'margin: 5px 0 0 0; font-size: 12px; opacity: 0.9;';
+        p.textContent = '深度分析与哲学思辨';
+
+        titleDiv.appendChild(h2);
+        titleDiv.appendChild(p);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.style.cssText = `
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        `;
+        closeBtn.textContent = '×';
+
+        headerDiv.appendChild(titleDiv);
+        headerDiv.appendChild(closeBtn);
+        header.appendChild(headerDiv);
+
+        return header;
+    }
+
+    /**
+     * 创建内容区域
+     */
+    createContent() {
+        const content = document.createElement('div');
+        content.className = 'philosophy-content';
+        content.style.cssText = `
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            color: white;
+        `;
+
+        const sections = [
+            { title: '🔍 关联发现', className: 'discovery-content', color: '#667eea' },
+            { title: '💭 哲学思辨', className: 'philosophy-content-inner', color: '#a855f7' },
+            { title: '⚖️ 多元视角', className: 'perspectives-content', color: '#22c55e' },
+            { title: '💡 核心洞察', className: 'wisdom-content', color: '#f59e0b' }
+        ];
+
+        sections.forEach(({ title, className, color }) => {
+            const section = document.createElement('div');
+            section.className = 'analysis-section';
+            if (className !== 'discovery-content') {
+                section.style.marginTop = '30px';
+            }
+
+            const h3 = document.createElement('h3');
+            h3.style.cssText = 'font-size: 16px; margin: 0 0 15px 0;';
+            h3.style.color = color;
+            h3.textContent = title;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = className;
+
+            section.appendChild(h3);
+            section.appendChild(contentDiv);
+            content.appendChild(section);
+        });
+
+        return content;
+    }
+
+    /**
+     * 创建输入区域
+     */
+    createInput() {
+        const inputDiv = document.createElement('div');
+        inputDiv.className = 'philosophy-input';
+        inputDiv.style.cssText = `
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        `;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'question-input';
+        input.placeholder = '提出哲学问题...';
+        input.style.cssText = `
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        `;
+
+        inputDiv.appendChild(input);
+
+        return inputDiv;
     }
     
     show() {
@@ -157,73 +215,112 @@ class PhilosophyUI {
     
     renderDiscovery(discovery) {
         const container = this.container.querySelector('.discovery-content');
-        
-        let html = '';
-        
+        container.innerHTML = '';
+
+        if (!discovery || (!discovery.causal?.length && !discovery.dialectical?.length)) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.cssText = 'color: #666;';
+            emptyDiv.textContent = '暂无发现';
+            container.appendChild(emptyDiv);
+            return;
+        }
+
         // 因果发现
         if (discovery.causal && discovery.causal.length > 0) {
-            html += `
-                <div style="margin-bottom: 15px;">
-                    <h4 style="font-size: 14px; margin: 0 0 10px 0; color: #4ecdc4;">
-                        🔗 因果链条
-                    </h4>
-                    ${discovery.causal.map(c => `
-                        <div style="
-                            background: rgba(255,255,255,0.05);
-                            padding: 10px;
-                            border-radius: 8px;
-                            margin-bottom: 8px;
-                            border-left: 3px solid #4ecdc4;
-                        ">
-                            <div style="font-weight: bold; margin-bottom: 5px;">${c.event}</div>
-                            <div style="font-size: 12px; color: #aaa;">${c.mechanism}</div>
-                            <div style="font-size: 11px; color: #888; margin-top: 5px;">
-                                置信度: ${(c.confidence * 100).toFixed(0)}%
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+            const causalDiv = document.createElement('div');
+            causalDiv.style.cssText = 'margin-bottom: 15px;';
+
+            const h4 = document.createElement('h4');
+            h4.style.cssText = 'font-size: 14px; margin: 0 0 10px 0; color: #4ecdc4;';
+            h4.textContent = '🔗 因果链条';
+            causalDiv.appendChild(h4);
+
+            discovery.causal.forEach(c => {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    background: rgba(255,255,255,0.05);
+                    padding: 10px;
+                    border-radius: 8px;
+                    margin-bottom: 8px;
+                    border-left: 3px solid #4ecdc4;
+                `;
+
+                const eventDiv = document.createElement('div');
+                eventDiv.style.cssText = 'font-weight: bold; margin-bottom: 5px;';
+                eventDiv.textContent = c.event;
+
+                const mechDiv = document.createElement('div');
+                mechDiv.style.cssText = 'font-size: 12px; color: #aaa;';
+                mechDiv.textContent = c.mechanism;
+
+                const confDiv = document.createElement('div');
+                confDiv.style.cssText = 'font-size: 11px; color: #888; margin-top: 5px;';
+                confDiv.textContent = `置信度: ${(c.confidence * 100).toFixed(0)}%`;
+
+                item.appendChild(eventDiv);
+                item.appendChild(mechDiv);
+                item.appendChild(confDiv);
+                causalDiv.appendChild(item);
+            });
+
+            container.appendChild(causalDiv);
         }
-        
+
         // 辩证发现
         if (discovery.dialectical && discovery.dialectical.length > 0) {
-            html += `
-                <div style="margin-bottom: 15px;">
-                    <h4 style="font-size: 14px; margin: 0 0 10px 0; color: #a855f7;">
-                        ⚖️ 辩证关系
-                    </h4>
-                    ${discovery.dialectical.map(d => `
-                        <div style="
-                            background: rgba(168, 85, 247, 0.1);
-                            padding: 10px;
-                            border-radius: 8px;
-                            margin-bottom: 8px;
-                        ">
-                            <div style="font-size: 12px; color: #aaa; margin-bottom: 5px;">矛盾：${d.contradiction}</div>
-                            <div style="display: flex; gap: 8px; font-size: 11px;">
-                                <span style="flex: 1; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px;">
-                                    正题：${d.thesis}
-                                </span>
-                                <span style="flex: 1; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px;">
-                                    反题：${d.antithesis}
-                                </span>
-                            </div>
-                            <div style="font-size: 12px; margin-top: 5px; color: #22c55e;">
-                                合题：${d.synthesis}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+            const dialecticalDiv = document.createElement('div');
+            dialecticalDiv.style.cssText = 'margin-bottom: 15px;';
+
+            const h4 = document.createElement('h4');
+            h4.style.cssText = 'font-size: 14px; margin: 0 0 10px 0; color: #a855f7;';
+            h4.textContent = '⚖️ 辩证关系';
+            dialecticalDiv.appendChild(h4);
+
+            discovery.dialectical.forEach(d => {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    background: rgba(168, 85, 247, 0.1);
+                    padding: 10px;
+                    border-radius: 8px;
+                    margin-bottom: 8px;
+                `;
+
+                const contradictionDiv = document.createElement('div');
+                contradictionDiv.style.cssText = 'font-size: 12px; color: #aaa; margin-bottom: 5px;';
+                contradictionDiv.textContent = `矛盾：${d.contradiction}`;
+
+                const flexDiv = document.createElement('div');
+                flexDiv.style.cssText = 'display: flex; gap: 8px; font-size: 11px;';
+
+                const thesisSpan = document.createElement('span');
+                thesisSpan.style.cssText = 'flex: 1; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px;';
+                thesisSpan.textContent = `正题：${d.thesis}`;
+
+                const antithesisSpan = document.createElement('span');
+                antithesisSpan.style.cssText = 'flex: 1; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 4px;';
+                antithesisSpan.textContent = `反题：${d.antithesis}`;
+
+                flexDiv.appendChild(thesisSpan);
+                flexDiv.appendChild(antithesisSpan);
+
+                const synthesisDiv = document.createElement('div');
+                synthesisDiv.style.cssText = 'font-size: 12px; margin-top: 5px; color: #22c55e;';
+                synthesisDiv.textContent = `合题：${d.synthesis}`;
+
+                item.appendChild(contradictionDiv);
+                item.appendChild(flexDiv);
+                item.appendChild(synthesisDiv);
+                dialecticalDiv.appendChild(item);
+            });
+
+            container.appendChild(dialecticalDiv);
         }
-        
-        container.innerHTML = html || '<div style="color: #666;">暂无发现</div>';
     }
     
     renderPhilosophy(philosophy) {
         const container = this.container.querySelector('.philosophy-content-inner');
-        
+        container.innerHTML = '';
+
         const dimensions = [
             { key: 'ontological', name: '本体论', icon: '🎯' },
             { key: 'epistemological', name: '认识论', icon: '👁️' },
@@ -232,117 +329,180 @@ class PhilosophyUI {
             { key: 'social', name: '社会哲学', icon: '👥' },
             { key: 'technological', name: '技术哲学', icon: '⚙️' }
         ];
-        
-        let html = '';
-        
+
+        let hasContent = false;
+
         dimensions.forEach(dim => {
-            if (philosophy[dim.key]) {
+            if (philosophy && philosophy[dim.key]) {
+                hasContent = true;
                 const p = philosophy[dim.key];
-                html += `
-                    <div style="
-                        background: rgba(255,255,255,0.05);
-                        padding: 15px;
-                        border-radius: 8px;
-                        margin-bottom: 12px;
-                    ">
-                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <span style="font-size: 20px; margin-right: 10px;">${dim.icon}</span>
-                            <h4 style="margin: 0; font-size: 14px; color: #667eea;">${dim.name}</h4>
-                        </div>
-                        <div style="font-size: 13px; color: #aaa; margin-bottom: 8px;">
-                            ${p.question}
-                        </div>
-                        <div style="font-size: 12px; color: #ccc; line-height: 1.6;">
-                            ${p.analysis}
-                        </div>
-                        <div style="
-                            margin-top: 10px;
-                            padding: 8px;
-                            background: rgba(102, 126, 234, 0.2);
-                            border-radius: 6px;
-                            font-size: 12px;
-                            color: #667eea;
-                        ">
-                            💡 ${p.insight}
-                        </div>
-                    </div>
-                `;
-            }
-        });
-        
-        container.innerHTML = html || '<div style="color: #666;">暂无哲学思辨</div>';
-    }
-    
-    renderPerspectives(perspectives) {
-        const container = this.container.querySelector('.perspectives-content');
-        
-        if (!perspectives || Object.keys(perspectives).length === 0) {
-            container.innerHTML = '<div style="color: #666;">暂无多元视角</div>';
-            return;
-        }
-        
-        let html = '';
-        
-        Object.entries(perspectives).forEach(([key, p]) => {
-            html += `
-                <div style="
+
+                const item = document.createElement('div');
+                item.style.cssText = `
                     background: rgba(255,255,255,0.05);
                     padding: 15px;
                     border-radius: 8px;
                     margin-bottom: 12px;
-                ">
-                    <h4 style="font-size: 14px; margin: 0 0 10px 0; color: #22c55e;">
-                        ${p.view}
-                    </h4>
-                    <div style="font-size: 12px; color: #4ecdc4; margin-bottom: 8px;">
-                        ✓ ${p.argument}
-                    </div>
-                    <div style="font-size: 12px; color: #ff6b6b;">
-                        ✗ ${p.counterArgument}
-                    </div>
-                </div>
-            `;
+                `;
+
+                const headerDiv = document.createElement('div');
+                headerDiv.style.cssText = 'display: flex; align-items: center; margin-bottom: 10px;';
+
+                const iconSpan = document.createElement('span');
+                iconSpan.style.cssText = 'font-size: 20px; margin-right: 10px;';
+                iconSpan.textContent = dim.icon;
+
+                const h4 = document.createElement('h4');
+                h4.style.cssText = 'margin: 0; font-size: 14px; color: #667eea;';
+                h4.textContent = dim.name;
+
+                headerDiv.appendChild(iconSpan);
+                headerDiv.appendChild(h4);
+
+                const questionDiv = document.createElement('div');
+                questionDiv.style.cssText = 'font-size: 13px; color: #aaa; margin-bottom: 8px;';
+                questionDiv.textContent = p.question;
+
+                const analysisDiv = document.createElement('div');
+                analysisDiv.style.cssText = 'font-size: 12px; color: #ccc; line-height: 1.6;';
+                analysisDiv.textContent = p.analysis;
+
+                const insightDiv = document.createElement('div');
+                insightDiv.style.cssText = `
+                    margin-top: 10px;
+                    padding: 8px;
+                    background: rgba(102, 126, 234, 0.2);
+                    border-radius: 6px;
+                    font-size: 12px;
+                    color: #667eea;
+                `;
+                insightDiv.textContent = `💡 ${p.insight}`;
+
+                item.appendChild(headerDiv);
+                item.appendChild(questionDiv);
+                item.appendChild(analysisDiv);
+                item.appendChild(insightDiv);
+
+                container.appendChild(item);
+            }
         });
-        
-        container.innerHTML = html;
+
+        if (!hasContent) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.cssText = 'color: #666;';
+            emptyDiv.textContent = '暂无哲学思辨';
+            container.appendChild(emptyDiv);
+        }
+    }
+    
+    renderPerspectives(perspectives) {
+        const container = this.container.querySelector('.perspectives-content');
+        container.innerHTML = '';
+
+        if (!perspectives || Object.keys(perspectives).length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.cssText = 'color: #666;';
+            emptyDiv.textContent = '暂无多元视角';
+            container.appendChild(emptyDiv);
+            return;
+        }
+
+        Object.entries(perspectives).forEach(([key, p]) => {
+            const item = document.createElement('div');
+            item.style.cssText = `
+                background: rgba(255,255,255,0.05);
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 12px;
+            `;
+
+            const h4 = document.createElement('h4');
+            h4.style.cssText = 'font-size: 14px; margin: 0 0 10px 0; color: #22c55e;';
+            h4.textContent = p.view;
+
+            const argumentDiv = document.createElement('div');
+            argumentDiv.style.cssText = 'font-size: 12px; color: #4ecdc4; margin-bottom: 8px;';
+            argumentDiv.textContent = `✓ ${p.argument}`;
+
+            const counterDiv = document.createElement('div');
+            counterDiv.style.cssText = 'font-size: 12px; color: #ff6b6b;';
+            counterDiv.textContent = `✗ ${p.counterArgument}`;
+
+            item.appendChild(h4);
+            item.appendChild(argumentDiv);
+            item.appendChild(counterDiv);
+
+            container.appendChild(item);
+        });
     }
     
     renderWisdom(wisdom) {
         const container = this.container.querySelector('.wisdom-content');
-        
+        container.innerHTML = '';
+
         if (!wisdom) {
-            container.innerHTML = '<div style="color: #666;">暂无核心洞察</div>';
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.cssText = 'color: #666;';
+            emptyDiv.textContent = '暂无核心洞察';
+            container.appendChild(emptyDiv);
             return;
         }
-        
-        container.innerHTML = `
-            <div style="
-                background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
-                padding: 20px;
-                border-radius: 12px;
-            ">
-                <div style="margin-bottom: 15px;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">核心洞察</div>
-                    <div style="font-size: 16px; font-weight: bold; color: #667eea;">
-                        ${wisdom.insight}
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">历史教训</div>
-                    <div style="font-size: 14px; color: #ccc;">
-                        ${wisdom.lesson}
-                    </div>
-                </div>
-                
-                <div>
-                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">当代意义</div>
-                    <div style="font-size: 14px; color: #22c55e;">
-                        ${wisdom.relevance}
-                    </div>
-                </div>
-            </div>
+
+        const wisdomDiv = document.createElement('div');
+        wisdomDiv.style.cssText = `
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            padding: 20px;
+            border-radius: 12px;
         `;
+
+        // 核心洞察
+        const insightSection = document.createElement('div');
+        insightSection.style.cssText = 'margin-bottom: 15px;';
+
+        const insightLabel = document.createElement('div');
+        insightLabel.style.cssText = 'font-size: 12px; color: #888; margin-bottom: 5px;';
+        insightLabel.textContent = '核心洞察';
+
+        const insightContent = document.createElement('div');
+        insightContent.style.cssText = 'font-size: 16px; font-weight: bold; color: #667eea;';
+        insightContent.textContent = wisdom.insight;
+
+        insightSection.appendChild(insightLabel);
+        insightSection.appendChild(insightContent);
+        wisdomDiv.appendChild(insightSection);
+
+        // 历史教训
+        const lessonSection = document.createElement('div');
+        lessonSection.style.cssText = 'margin-bottom: 15px;';
+
+        const lessonLabel = document.createElement('div');
+        lessonLabel.style.cssText = 'font-size: 12px; color: #888; margin-bottom: 5px;';
+        lessonLabel.textContent = '历史教训';
+
+        const lessonContent = document.createElement('div');
+        lessonContent.style.cssText = 'font-size: 14px; color: #ccc;';
+        lessonContent.textContent = wisdom.lesson;
+
+        lessonSection.appendChild(lessonLabel);
+        lessonSection.appendChild(lessonContent);
+        wisdomDiv.appendChild(lessonSection);
+
+        // 当代意义
+        const relevanceSection = document.createElement('div');
+
+        const relevanceLabel = document.createElement('div');
+        relevanceLabel.style.cssText = 'font-size: 12px; color: #888; margin-bottom: 5px;';
+        relevanceLabel.textContent = '当代意义';
+
+        const relevanceContent = document.createElement('div');
+        relevanceContent.style.cssText = 'font-size: 14px; color: #22c55e;';
+        relevanceContent.textContent = wisdom.relevance;
+
+        relevanceSection.appendChild(relevanceLabel);
+        relevanceSection.appendChild(relevanceContent);
+        wisdomDiv.appendChild(relevanceSection);
+
+        container.appendChild(wisdomDiv);
     }
     
     async askQuestion(question) {
@@ -362,7 +522,7 @@ class PhilosophyUI {
     showAnswer(answer) {
         // 在界面上显示答案
         const container = this.container.querySelector('.philosophy-content');
-        
+
         const answerDiv = document.createElement('div');
         answerDiv.style.cssText = `
             background: rgba(34, 197, 94, 0.1);
@@ -371,38 +531,55 @@ class PhilosophyUI {
             margin-top: 20px;
             border-left: 3px solid #22c55e;
         `;
-        
-        answerDiv.innerHTML = `
-            <h4 style="margin: 0 0 10px 0; color: #22c55e;">🤖 AI回答</h4>
-            <div style="font-size: 13px; color: #ccc; line-height: 1.6;">
-                ${answer.directAnswer}
-            </div>
-        `;
-        
+
+        const h4 = document.createElement('h4');
+        h4.style.cssText = 'margin: 0 0 10px 0; color: #22c55e;';
+        h4.textContent = '🤖 AI回答';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = 'font-size: 13px; color: #ccc; line-height: 1.6;';
+        contentDiv.textContent = answer.directAnswer;
+
+        answerDiv.appendChild(h4);
+        answerDiv.appendChild(contentDiv);
+
         container.appendChild(answerDiv);
-        
+
         // 滚动到答案
         answerDiv.scrollIntoView({ behavior: 'smooth' });
     }
     
     showLoading() {
         const container = this.container.querySelector('.philosophy-content');
-        container.innerHTML = `
-            <div style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 300px;
-                color: #667eea;
-            ">
-                <div style="font-size: 48px; margin-bottom: 20px;">🧠</div>
-                <div style="font-size: 16px;">AI正在进行深度哲学思辨...</div>
-                <div style="font-size: 12px; color: #888; margin-top: 10px;">
-                    运用多种哲学维度进行分析
-                </div>
-            </div>
+        container.innerHTML = '';
+
+        const loadingDiv = document.createElement('div');
+        loadingDiv.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: #667eea;
         `;
+
+        const iconDiv = document.createElement('div');
+        iconDiv.style.cssText = 'font-size: 48px; margin-bottom: 20px;';
+        iconDiv.textContent = '🧠';
+
+        const textDiv = document.createElement('div');
+        textDiv.style.cssText = 'font-size: 16px;';
+        textDiv.textContent = 'AI正在进行深度哲学思辨...';
+
+        const hintDiv = document.createElement('div');
+        hintDiv.style.cssText = 'font-size: 12px; color: #888; margin-top: 10px;';
+        hintDiv.textContent = '运用多种哲学维度进行分析';
+
+        loadingDiv.appendChild(iconDiv);
+        loadingDiv.appendChild(textDiv);
+        loadingDiv.appendChild(hintDiv);
+
+        container.appendChild(loadingDiv);
     }
     
     hideLoading() {

@@ -28,112 +28,154 @@ class FilterPanel {
             padding: 20px;
             z-index: 99;
         `;
-        
-        this.container.innerHTML = `
-            <h3 style="margin: 0 0 20px 0; font-size: 18px; color: #333;">
-                🔍 筛选条件
-            </h3>
-            
-            <div class="filter-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #666;">
-                    类别
-                </label>
-                <select class="filter-category" style="
-                    width: 100%;
-                    padding: 10px;
-                    border: 1px solid #ddd;
-                    border-radius: 8px;
-                    font-size: 14px;
-                ">
-                    <option value="">全部</option>
-                    <option value="politics">政治</option>
-                    <option value="technology">科技</option>
-                    <option value="culture">文化</option>
-                    <option value="economy">经济</option>
-                    <option value="military">军事</option>
-                </select>
-            </div>
-            
-            <div class="filter-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #666;">
-                    时期
-                </label>
-                <select class="filter-period" style="
-                    width: 100%;
-                    padding: 10px;
-                    border: 1px solid #ddd;
-                    border-radius: 8px;
-                    font-size: 14px;
-                ">
-                    <option value="">全部</option>
-                    <option value="远古时代">远古时代</option>
-                    <option value="古代">古代</option>
-                    <option value="中世纪">中世纪</option>
-                    <option value="近代">近代</option>
-                    <option value="现代">现代</option>
-                </select>
-            </div>
-            
-            <div class="filter-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #666;">
-                    类型
-                </label>
-                <select class="filter-type" style="
-                    width: 100%;
-                    padding: 10px;
-                    border: 1px solid #ddd;
-                    border-radius: 8px;
-                    font-size: 14px;
-                ">
-                    <option value="">全部</option>
-                    <option value="event">事件</option>
-                    <option value="person">人物</option>
-                    <option value="period">时期</option>
-                </select>
-            </div>
-            
-            <div class="filter-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #666;">
-                    重要度: <span class="importance-value">1</span>+
-                </label>
-                <input type="range" class="filter-importance" min="1" max="5" value="1" style="
-                    width: 100%;
-                " />
-            </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <button class="apply-filter" style="
-                    flex: 1;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    padding: 10px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 14px;
-                ">应用</button>
-                <button class="reset-filter" style="
-                    flex: 1;
-                    background: #f0f0f0;
-                    color: #666;
-                    border: none;
-                    padding: 10px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 14px;
-                ">重置</button>
-            </div>
+
+        // 标题
+        const title = document.createElement('h3');
+        title.style.cssText = 'margin: 0 0 20px 0; font-size: 18px; color: #333;';
+        title.textContent = '🔍 筛选条件';
+        this.container.appendChild(title);
+
+        // 类别选择
+        const categoryGroup = this.createSelectGroup('类别', 'filter-category', [
+            { value: '', text: '全部' },
+            { value: 'politics', text: '政治' },
+            { value: 'technology', text: '科技' },
+            { value: 'culture', text: '文化' },
+            { value: 'economy', text: '经济' },
+            { value: 'military', text: '军事' }
+        ]);
+        this.container.appendChild(categoryGroup);
+
+        // 时期选择
+        const periodGroup = this.createSelectGroup('时期', 'filter-period', [
+            { value: '', text: '全部' },
+            { value: '远古时代', text: '远古时代' },
+            { value: '古代', text: '古代' },
+            { value: '中世纪', text: '中世纪' },
+            { value: '近代', text: '近代' },
+            { value: '现代', text: '现代' }
+        ]);
+        this.container.appendChild(periodGroup);
+
+        // 类型选择
+        const typeGroup = this.createSelectGroup('类型', 'filter-type', [
+            { value: '', text: '全部' },
+            { value: 'event', text: '事件' },
+            { value: 'person', text: '人物' },
+            { value: 'period', text: '时期' }
+        ]);
+        this.container.appendChild(typeGroup);
+
+        // 重要度滑块
+        const importanceGroup = this.createImportanceGroup();
+        this.container.appendChild(importanceGroup);
+
+        // 按钮
+        const buttonDiv = document.createElement('div');
+        buttonDiv.style.cssText = 'display: flex; gap: 10px;';
+
+        const applyBtn = document.createElement('button');
+        applyBtn.className = 'apply-filter';
+        applyBtn.style.cssText = `
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
         `;
-        
+        applyBtn.textContent = '应用';
+
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'reset-filter';
+        resetBtn.style.cssText = `
+            flex: 1;
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        resetBtn.textContent = '重置';
+
+        buttonDiv.appendChild(applyBtn);
+        buttonDiv.appendChild(resetBtn);
+        this.container.appendChild(buttonDiv);
+
         // 绑定事件
         this.container.querySelector('.filter-importance').addEventListener('input', (e) => {
             this.container.querySelector('.importance-value').textContent = e.target.value;
         });
-        
-        this.container.querySelector('.apply-filter').addEventListener('click', () => this.applyFilters());
-        this.container.querySelector('.reset-filter').addEventListener('click', () => this.resetFilters());
-        
+
+        applyBtn.addEventListener('click', () => this.applyFilters());
+        resetBtn.addEventListener('click', () => this.resetFilters());
+
         return this.container;
+    }
+
+    /**
+     * 创建选择框组
+     */
+    createSelectGroup(label, className, options) {
+        const group = document.createElement('div');
+        group.className = 'filter-group';
+        group.style.cssText = 'margin-bottom: 20px;';
+
+        const labelEl = document.createElement('label');
+        labelEl.style.cssText = 'display: block; margin-bottom: 8px; font-size: 14px; color: #666;';
+        labelEl.textContent = label;
+
+        const select = document.createElement('select');
+        select.className = className;
+        select.style.cssText = `
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        `;
+
+        options.forEach(({ value, text }) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = text;
+            select.appendChild(option);
+        });
+
+        group.appendChild(labelEl);
+        group.appendChild(select);
+
+        return group;
+    }
+
+    /**
+     * 创建重要度滑块组
+     */
+    createImportanceGroup() {
+        const group = document.createElement('div');
+        group.className = 'filter-group';
+        group.style.cssText = 'margin-bottom: 20px;';
+
+        const label = document.createElement('label');
+        label.style.cssText = 'display: block; margin-bottom: 8px; font-size: 14px; color: #666;';
+        label.innerHTML = '重要度: <span class="importance-value">1</span>+';
+
+        const input = document.createElement('input');
+        input.type = 'range';
+        input.className = 'filter-importance';
+        input.min = 1;
+        input.max = 5;
+        input.value = 1;
+        input.style.cssText = 'width: 100%;';
+
+        group.appendChild(label);
+        group.appendChild(input);
+
+        return group;
     }
     
     applyFilters() {

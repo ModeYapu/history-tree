@@ -72,32 +72,47 @@ class EnhancedNetworkView {
             max-width: 300px;
             z-index: 10;
         `;
-        
-        panel.innerHTML = `
-            <h3 style="margin: 0 0 15px 0; color: #333;">
-                🔍 历史关联发现
-            </h3>
-            <div style="font-size: 13px; color: #666; line-height: 1.6;">
-                <p style="margin: 0 0 10px 0;">
-                    点击节点查看AI发现的关联
-                </p>
-                <div style="margin-top: 15px;">
-                    <div style="margin-bottom: 8px;">
-                        <span style="display: inline-block; width: 20px; height: 3px; background: #22c55e; margin-right: 5px;"></span>
-                        <span>直接因果</span>
-                    </div>
-                    <div style="margin-bottom: 8px;">
-                        <span style="display: inline-block; width: 20px; height: 3px; background: #3b82f6; margin-right: 5px;"></span>
-                        <span>跨时空关联</span>
-                    </div>
-                    <div style="margin-bottom: 8px;">
-                        <span style="display: inline-block; width: 20px; height: 3px; background: #f59e0b; margin-right: 5px;"></span>
-                        <span>同期对比</span>
-                    </div>
-                </div>
-            </div>
-        `;
-        
+
+        const h3 = document.createElement('h3');
+        h3.style.cssText = 'margin: 0 0 15px 0; color: #333;';
+        h3.textContent = '🔍 历史关联发现';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = 'font-size: 13px; color: #666; line-height: 1.6;';
+
+        const p = document.createElement('p');
+        p.style.cssText = 'margin: 0 0 10px 0;';
+        p.textContent = '点击节点查看AI发现的关联';
+
+        const legendDiv = document.createElement('div');
+        legendDiv.style.cssText = 'margin-top: 15px;';
+
+        const legendItems = [
+            { color: '#22c55e', label: '直接因果' },
+            { color: '#3b82f6', label: '跨时空关联' },
+            { color: '#f59e0b', label: '同期对比' }
+        ];
+
+        legendItems.forEach(({ color, label }) => {
+            const item = document.createElement('div');
+            item.style.cssText = 'margin-bottom: 8px;';
+
+            const line = document.createElement('span');
+            line.style.cssText = `display: inline-block; width: 20px; height: 3px; background: ${color}; margin-right: 5px;`;
+
+            const text = document.createElement('span');
+            text.textContent = label;
+
+            item.appendChild(line);
+            item.appendChild(text);
+            legendDiv.appendChild(item);
+        });
+
+        contentDiv.appendChild(p);
+        contentDiv.appendChild(legendDiv);
+        panel.appendChild(h3);
+        panel.appendChild(contentDiv);
+
         this.container.appendChild(panel);
     }
     
@@ -114,40 +129,47 @@ class EnhancedNetworkView {
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             z-index: 10;
         `;
-        
-        panel.innerHTML = `
-            <button class="btn-discover" style="
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 13px;
-                margin-bottom: 10px;
-                width: 100%;
-            ">🔍 发现新关联</button>
-            
-            <button class="btn-reset" style="
-                background: #f0f0f0;
-                color: #666;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 13px;
-                width: 100%;
-            ">重置视图</button>
+
+        const discoverBtn = document.createElement('button');
+        discoverBtn.className = 'btn-discover';
+        discoverBtn.style.cssText = `
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-bottom: 10px;
+            width: 100%;
         `;
-        
-        panel.querySelector('.btn-discover').addEventListener('click', () => {
+        discoverBtn.textContent = '🔍 发现新关联';
+
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'btn-reset';
+        resetBtn.style.cssText = `
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            width: 100%;
+        `;
+        resetBtn.textContent = '重置视图';
+
+        discoverBtn.addEventListener('click', () => {
             this.discoverNewConnections();
         });
-        
-        panel.querySelector('.btn-reset').addEventListener('click', () => {
+
+        resetBtn.addEventListener('click', () => {
             this.resetView();
         });
-        
+
+        panel.appendChild(discoverBtn);
+        panel.appendChild(resetBtn);
+
         this.container.appendChild(panel);
     }
     
@@ -411,19 +433,36 @@ class EnhancedNetworkView {
             .style('font-size', '13px')
             .style('z-index', 1000)
             .style('max-width', '300px');
-        
-        tooltip.html(`
-            <div style="font-weight: bold; margin-bottom: 8px;">
-                ${this.getLinkTypeName(link.type)}
-            </div>
-            ${link.evidence ? `<div style="color: #aaa; margin-bottom: 5px;">${link.evidence}</div>` : ''}
-            ${link.insight ? `<div style="color: #f59e0b;">💡 ${link.insight}</div>` : ''}
-        `);
-        
+
+        const titleDiv = document.createElement('div');
+        titleDiv.style.cssText = 'font-weight: bold; margin-bottom: 8px;';
+        titleDiv.textContent = this.getLinkTypeName(link.type);
+
+        let content = titleDiv.outerHTML;
+
+        if (link.evidence) {
+            content += `<div style="color: #aaa; margin-bottom: 5px;">${this.escapeHtml(link.evidence)}</div>`;
+        }
+        if (link.insight) {
+            content += `<div style="color: #f59e0b;">💡 ${this.escapeHtml(link.insight)}</div>`;
+        }
+
+        tooltip.html(content);
+
         const [x, y] = d3.pointer(event, document.body);
         tooltip
             .style('left', `${x + 10}px`)
             .style('top', `${y - 10}px`);
+    }
+
+    /**
+     * 转义HTML字符
+     */
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
     
     hideLinkTooltip() {

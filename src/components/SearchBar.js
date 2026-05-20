@@ -23,68 +23,80 @@ class SearchBar {
             width: 600px;
             max-width: 90%;
         `;
-        
-        this.container.innerHTML = `
-            <div style="
-                background: white;
-                border-radius: 25px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                overflow: hidden;
-                display: flex;
-                align-items: center;
-            ">
-                <input type="text" 
-                    placeholder="搜索历史事件、人物、地点..." 
-                    style="
-                        flex: 1;
-                        border: none;
-                        padding: 15px 25px;
-                        font-size: 16px;
-                        outline: none;
-                    "
-                />
-                <button style="
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    padding: 15px 30px;
-                    font-size: 16px;
-                    cursor: pointer;
-                ">🔍</button>
-            </div>
-            <div class="search-results" style="
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                margin-top: 10px;
-                display: none;
-                max-height: 400px;
-                overflow-y: auto;
-            "></div>
+
+        // 安全地创建搜索容器
+        const searchBox = document.createElement('div');
+        searchBox.style.cssText = `
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
         `;
-        
-        this.input = this.container.querySelector('input');
-        this.resultsContainer = this.container.querySelector('.search-results');
-        
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = '搜索历史事件、人物、地点...';
+        input.style.cssText = `
+            flex: 1;
+            border: none;
+            padding: 15px 25px;
+            font-size: 16px;
+            outline: none;
+        `;
+
+        const button = document.createElement('button');
+        button.style.cssText = `
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+        `;
+        button.textContent = '🔍';
+
+        searchBox.appendChild(input);
+        searchBox.appendChild(button);
+
+        this.resultsContainer = document.createElement('div');
+        this.resultsContainer.className = 'search-results';
+        this.resultsContainer.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            margin-top: 10px;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+        `;
+
+        this.container.appendChild(searchBox);
+        this.container.appendChild(this.resultsContainer);
+
+        this.input = input;
+
         // 绑定事件
         this.input.addEventListener('input', (e) => this.onInput(e));
         this.input.addEventListener('focus', () => this.onFocus());
         this.input.addEventListener('blur', () => setTimeout(() => this.onBlur(), 200));
-        
-        this.container.querySelector('button').addEventListener('click', () => this.search());
-        
+
+        button.addEventListener('click', () => this.search());
+
         // 键盘快捷键
-        document.addEventListener('keydown', (e) => {
+        this._keydownHandler = (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
                 this.input.focus();
             }
-            
+
             if (e.key === 'Escape') {
                 this.hideResults();
             }
-        });
-        
+        };
+        document.addEventListener('keydown', this._keydownHandler);
+
         return this.container;
     }
     
@@ -125,47 +137,95 @@ class SearchBar {
     }
     
     showResults() {
+        // 清空结果容器
+        this.resultsContainer.innerHTML = '';
+
         if (this.results.length === 0) {
-            this.resultsContainer.innerHTML = `
-                <div style="padding: 20px; text-align: center; color: #999;">
-                    没有找到相关结果
-                </div>
-            `;
+            const noResults = document.createElement('div');
+            noResults.style.cssText = 'padding: 20px; text-align: center; color: #999;';
+            noResults.textContent = '没有有找到相关结果';
+            this.resultsContainer.appendChild(noResults);
         } else {
-            this.resultsContainer.innerHTML = this.results.map(node => `
-                <div class="search-result-item" style="
-                    padding: 15px 20px;
-                    border-bottom: 1px solid #f0f0f0;
-                    cursor: pointer;
-                    transition: background 0.2s;
-                " onmouseover="this.style.background='#f8f8f8'" 
-                   onmouseout="this.style.background='white'"
-                   onclick="window.app.searchBar.selectResult('${node.id}')">
-                    <div style="display: flex; align-items: center;">
-                        <span style="font-size: 24px; margin-right: 15px;">
-                            ${this.getNodeIcon(node.type)}
-                        </span>
-                        <div style="flex: 1;">
-                            <div style="font-weight: bold; font-size: 15px; margin-bottom: 3px;">
-                                ${node.name}
-                            </div>
-                            <div style="color: #999; font-size: 13px;">
-                                ${node.time.displayDate} • ${node.summary || ''}
-                            </div>
-                        </div>
-                        <span style="
-                            background: ${this.getCategoryColor(node.category.primary)};
-                            color: white;
-                            padding: 3px 10px;
-                            border-radius: 12px;
-                            font-size: 12px;
-                        ">${node.category.primary}</span>
-                    </div>
-                </div>
-            `).join('');
+            this.results.forEach(node => {
+                const resultItem = this.createResultItem(node);
+                this.resultsContainer.appendChild(resultItem);
+            });
         }
-        
+
         this.resultsContainer.style.display = 'block';
+    }
+
+    /**
+     * 安全地创建搜索结果项
+     */
+    createResultItem(node) {
+        const item = document.createElement('div');
+        item.className = 'search-result-item';
+        item.style.cssText = `
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        `;
+
+        // 悬停效果
+        item.addEventListener('mouseenter', () => {
+            item.style.background = '#f8f8f8';
+        });
+        item.addEventListener('mouseleave', () => {
+            item.style.background = 'white';
+        });
+
+        // 点击事件
+        item.addEventListener('click', () => {
+            this.selectResult(node.id);
+        });
+
+        // 内容容器
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = 'display: flex; align-items: center;';
+
+        // 图标
+        const iconSpan = document.createElement('span');
+        iconSpan.style.cssText = 'font-size: 24px; margin-right: 15px;';
+        iconSpan.textContent = this.getNodeIcon(node.type);
+
+        // 信息容器
+        const infoDiv = document.createElement('div');
+        infoDiv.style.cssText = 'flex: 1;';
+
+        // 名称
+        const nameDiv = document.createElement('div');
+        nameDiv.style.cssText = 'font-weight: bold; font-size: 15px; margin-bottom: 3px;';
+        nameDiv.textContent = node.name;
+
+        // 详情
+        const detailDiv = document.createElement('div');
+        detailDiv.style.cssText = 'color: #999; font-size: 13px;';
+        detailDiv.textContent = `${node.time.displayDate} • ${node.summary || ''}`;
+
+        infoDiv.appendChild(nameDiv);
+        infoDiv.appendChild(detailDiv);
+
+        // 分类标签
+        const categorySpan = document.createElement('span');
+        const categoryColor = this.getCategoryColor(node.category.primary);
+        categorySpan.style.cssText = `
+            background: ${categoryColor};
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        `;
+        categorySpan.textContent = node.category.primary;
+
+        contentDiv.appendChild(iconSpan);
+        contentDiv.appendChild(infoDiv);
+        contentDiv.appendChild(categorySpan);
+
+        item.appendChild(contentDiv);
+
+        return item;
     }
     
     hideResults() {
@@ -203,6 +263,17 @@ class SearchBar {
     }
     
     destroy() {
+        // 清理定时器
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
+        }
+
+        // 清理键盘事件监听器
+        if (this._keydownHandler) {
+            document.removeEventListener('keydown', this._keydownHandler);
+        }
+
+        // 移除容器
         if (this.container) {
             this.container.remove();
         }

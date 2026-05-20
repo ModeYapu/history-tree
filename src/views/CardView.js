@@ -64,69 +64,108 @@ class CardView {
             transition: transform 0.3s, box-shadow 0.3s;
             cursor: pointer;
         `;
-        
-        card.innerHTML = `
-            <div class="card-header" style="
-                background: linear-gradient(135deg, ${this.getCategoryColor(node.category.primary)}, ${this.getCategoryColor(node.category.primary)}dd);
-                padding: 20px;
-                color: white;
-            ">
-                <div class="card-icon" style="font-size: 32px; margin-bottom: 10px;">
-                    ${this.getNodeIcon(node.type)}
-                </div>
-                <h3 style="margin: 0; font-size: 18px;">${node.name}</h3>
-                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">
-                    ${node.time.displayDate}
-                </p>
-            </div>
-            <div class="card-body" style="padding: 15px;">
-                <p style="margin: 0; color: #666; line-height: 1.6;">
-                    ${node.summary}
-                </p>
-                <div class="card-meta" style="
-                    margin-top: 15px;
-                    padding-top: 15px;
-                    border-top: 1px solid #eee;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    font-size: 12px;
-                    color: #999;
-                ">
-                    <span>${node.location.name || '未知地点'}</span>
-                    <span>重要度: ${'⭐'.repeat(node.metadata.importance)}</span>
-                </div>
-                ${node.category.tags.length > 0 ? `
-                    <div class="card-tags" style="margin-top: 10px;">
-                        ${node.category.tags.map(tag => `
-                            <span style="
-                                display: inline-block;
-                                background: #f0f0f0;
-                                padding: 2px 8px;
-                                border-radius: 12px;
-                                font-size: 11px;
-                                margin-right: 5px;
-                            ">${tag}</span>
-                        `).join('')}
-                    </div>
-                ` : ''}
-            </div>
+
+        // 卡片头部
+        const header = document.createElement('div');
+        header.className = 'card-header';
+        const catColor = this.getCategoryColor(node.category.primary);
+        header.style.cssText = `
+            background: linear-gradient(135deg, ${catColor}, ${catColor}dd);
+            padding: 20px;
+            color: white;
         `;
-        
+
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'card-icon';
+        iconDiv.style.cssText = 'font-size: 32px; margin-bottom: 10px;';
+        iconDiv.textContent = this.getNodeIcon(node.type);
+
+        const h3 = document.createElement('h3');
+        h3.style.cssText = 'margin: 0; font-size: 18px;';
+        h3.textContent = node.name;
+
+        const p = document.createElement('p');
+        p.style.cssText = 'margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;';
+        p.textContent = node.time.displayDate;
+
+        header.appendChild(iconDiv);
+        header.appendChild(h3);
+        header.appendChild(p);
+
+        // 卡片主体
+        const body = document.createElement('div');
+        body.className = 'card-body';
+        body.style.cssText = 'padding: 15px;';
+
+        const summaryP = document.createElement('p');
+        summaryP.style.cssText = 'margin: 0; color: #666; line-height: 1.6;';
+        summaryP.textContent = node.summary;
+
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'card-meta';
+        metaDiv.style.cssText = `
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #999;
+        `;
+
+        const locationSpan = document.createElement('span');
+        locationSpan.textContent = node.location.name || '未知地点';
+
+        const importanceSpan = document.createElement('span');
+        importanceSpan.textContent = `重要度: ${'⭐'.repeat(node.metadata.importance)}`;
+
+        metaDiv.appendChild(locationSpan);
+        metaDiv.appendChild(importanceSpan);
+
+        body.appendChild(summaryP);
+        body.appendChild(metaDiv);
+
+        // 标签
+        if (node.category.tags && node.category.tags.length > 0) {
+            const tagsDiv = document.createElement('div');
+            tagsDiv.className = 'card-tags';
+            tagsDiv.style.cssText = 'margin-top: 10px;';
+
+            node.category.tags.forEach(tag => {
+                const tagSpan = document.createElement('span');
+                tagSpan.style.cssText = `
+                    display: inline-block;
+                    background: #f0f0f0;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 11px;
+                    margin-right: 5px;
+                `;
+                tagSpan.textContent = tag;
+                tagsDiv.appendChild(tagSpan);
+            });
+
+            body.appendChild(tagsDiv);
+        }
+
+        card.appendChild(header);
+        card.appendChild(body);
+
         card.addEventListener('click', () => {
             this.app.eventBus.emit('node:select', node);
         });
-        
+
         card.addEventListener('mouseenter', () => {
             card.style.transform = 'translateY(-5px)';
             card.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
         });
-        
+
         card.addEventListener('mouseleave', () => {
             card.style.transform = 'translateY(0)';
             card.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
         });
-        
+
         return card;
     }
     
