@@ -94,7 +94,12 @@ class ModelSelector {
 
         const currentModelDiv = document.createElement('div');
         currentModelDiv.style.cssText = 'margin-top: 10px; font-size: 12px; color: #888;';
-        currentModelDiv.innerHTML = '当前模型: <span id="currentModelName" style="color: #667eea;">-</span>';
+        currentModelDiv.textContent = '当前模型: ';
+        const modelNameSpan = document.createElement('span');
+        modelNameSpan.id = 'currentModelName';
+        modelNameSpan.style.color = '#667eea';
+        modelNameSpan.textContent = '-';
+        currentModelDiv.appendChild(modelNameSpan);
 
         header.appendChild(headerTop);
         header.appendChild(currentModelDiv);
@@ -190,7 +195,7 @@ class ModelSelector {
             if (!container) return;
 
             // 清空现有内容
-            container.innerHTML = '';
+            container.replaceChildren();
 
             modelList.forEach(model => {
                 const card = this.createModelCard(model);
@@ -471,6 +476,47 @@ class ModelSelector {
         } else {
             this.hide();
         }
+    }
+
+    /**
+     * 销毁组件，清理资源防止内存泄漏
+     */
+    destroy() {
+        // 清理事件监听器
+        if (this.container) {
+            const closeBtn = this.container.querySelector('.close-btn');
+            const settingsBtn = this.container.querySelector('.settings-btn');
+
+            if (closeBtn) {
+                const newBtn = closeBtn.cloneNode(true);
+                closeBtn.parentNode.replaceChild(newBtn, closeBtn);
+            }
+            if (settingsBtn) {
+                const newBtn = settingsBtn.cloneNode(true);
+                settingsBtn.parentNode.replaceChild(newBtn, settingsBtn);
+            }
+
+            // 清理模型卡片的事件监听器
+            const modelCards = this.container.querySelectorAll('.model-card');
+            modelCards.forEach(card => {
+                const newCard = card.cloneNode(true);
+                card.parentNode.replaceChild(newCard, card);
+            });
+        }
+
+        // 清理容器
+        if (this.container && this.container.parentNode) {
+            this.container.parentNode.removeChild(this.container);
+        }
+
+        // 清理设置面板（如果存在）
+        const settingsPanel = document.querySelector('.model-settings-panel');
+        if (settingsPanel) {
+            settingsPanel.remove();
+        }
+
+        this.container = null;
+        this.app = null;
     }
 }
 

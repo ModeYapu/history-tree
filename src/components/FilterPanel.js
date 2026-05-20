@@ -162,7 +162,12 @@ class FilterPanel {
 
         const label = document.createElement('label');
         label.style.cssText = 'display: block; margin-bottom: 8px; font-size: 14px; color: #666;';
-        label.innerHTML = '重要度: <span class="importance-value">1</span>+';
+        label.textContent = '重要度: ';
+        const importanceSpan = document.createElement('span');
+        importanceSpan.className = 'importance-value';
+        importanceSpan.textContent = '1';
+        label.appendChild(importanceSpan);
+        label.appendChild(document.createTextNode('+'));
 
         const input = document.createElement('input');
         input.type = 'range';
@@ -217,8 +222,16 @@ class FilterPanel {
     
     destroy() {
         if (this.container) {
-            this.container.remove();
+            // 克隆节点来移除所有事件监听器
+            const newContainer = this.container.cloneNode(false);
+            if (this.container.parentNode) {
+                this.container.parentNode.replaceChild(newContainer, this.container);
+            }
+            newContainer.remove();
+            this.container = null;
         }
+
+        this.app = null;
     }
 }
 

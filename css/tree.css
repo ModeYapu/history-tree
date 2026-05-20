@@ -3,20 +3,24 @@
 /* 节点 */
 .node {
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .node circle {
-    fill: rgba(212, 168, 83, 0.15);
+    fill: rgba(212, 168, 83, 0.18);
     stroke: var(--gold-primary, #D4A853);
     stroke-width: 2.5px;
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .node:hover circle {
-    fill: rgba(212, 168, 83, 0.35);
-    transform: scale(1.25);
-    filter: drop-shadow(0 0 8px rgba(212, 168, 83, 0.4));
+    fill: rgba(212, 168, 83, 0.4);
+    transform: scale(1.3);
+    filter: drop-shadow(0 0 12px rgba(212, 168, 83, 0.5));
+}
+
+.node:active circle {
+    transform: scale(1.15);
 }
 
 .node.period circle {
@@ -52,45 +56,58 @@
 
 /* 节点标签 */
 .node text {
-    font-size: 12px;
-    fill: var(--text-primary, #F5E6C8);
+    font-size: 14px;
+    fill: var(--text-primary, #FFF5E0);
     text-anchor: middle;
     dominant-baseline: middle;
     pointer-events: none;
     font-family: 'Noto Serif SC', serif;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    letter-spacing: 0.3px;
 }
 
 .node.period text {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     fill: var(--gold-light, #F0D68A);
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
 }
 
 .node.branch text {
-    font-size: 13px;
-    fill: var(--text-secondary, #C9A96E);
+    font-size: 15px;
+    fill: var(--text-secondary, #F0D68A);
     font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .node.leaf text {
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+}
+
+.node:hover text {
+    fill: var(--gold-light, #F0D68A);
+    text-shadow: 0 0 8px rgba(212, 168, 83, 0.4);
 }
 
 /* 连接线 */
 .link {
     fill: none;
-    stroke: rgba(139, 105, 20, 0.5);
+    stroke: rgba(139, 105, 20, 0.6);
     stroke-width: 2px;
     stroke-opacity: 0.5;
-    transition: all 0.4s;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
 }
 
 .link:hover {
-    stroke-width: 3px;
-    stroke-opacity: 0.9;
+    stroke-width: 3.5px;
+    stroke-opacity: 1;
     stroke: var(--gold-primary, #D4A853);
+    filter: drop-shadow(0 0 4px rgba(212, 168, 83, 0.3));
 }
 
 .link.period-link {
@@ -203,15 +220,16 @@
 /* 工具提示 */
 .tooltip {
     position: absolute;
-    background: linear-gradient(145deg, rgba(42, 33, 24, 0.97), rgba(26, 20, 16, 0.99));
-    border: 1px solid rgba(212, 168, 83, 0.2);
-    border-radius: 10px;
-    padding: 14px 18px;
+    background: linear-gradient(145deg, rgba(42, 33, 24, 0.98), rgba(26, 20, 16, 0.99));
+    border: 1px solid rgba(212, 168, 83, 0.25);
+    border-radius: 12px;
+    padding: 16px 20px;
     pointer-events: none;
     z-index: 1002;
-    max-width: 300px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 168, 83, 0.1);
     font-family: 'Noto Serif SC', serif;
+    backdrop-filter: blur(10px);
 }
 
 .tooltip::before {
@@ -220,29 +238,30 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
+    height: 3px;
     background: linear-gradient(90deg, transparent, var(--gold-primary, #D4A853), transparent);
-    border-radius: 10px 10px 0 0;
+    border-radius: 12px 12px 0 0;
 }
 
 .tooltip-title {
     font-weight: 700;
     color: var(--gold-light, #F0D68A);
-    margin-bottom: 6px;
-    font-size: 0.95em;
+    margin-bottom: 8px;
+    font-size: var(--font-md);
+    letter-spacing: 0.5px;
 }
 
 .tooltip-year {
-    font-size: 0.82em;
-    color: var(--text-muted, #8B7355);
-    margin-bottom: 8px;
+    font-size: var(--font-xs);
+    color: var(--text-muted, #B89B6E);
+    margin-bottom: 10px;
     font-style: italic;
 }
 
 .tooltip-desc {
-    font-size: 0.88em;
-    line-height: 1.6;
-    color: var(--text-primary, #F5E6C8);
+    font-size: var(--font-sm);
+    line-height: 1.7;
+    color: var(--text-primary, #FFEDD5);
 }
 
 /* 连接线动画路径 */
@@ -265,35 +284,36 @@
     right: 24px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
     z-index: 1000;
 }
 
 .zoom-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     background: var(--bg-glass, rgba(42, 33, 24, 0.75));
     backdrop-filter: blur(10px);
     border: 1px solid var(--border-subtle, rgba(212, 168, 83, 0.15));
-    border-radius: var(--radius-sm, 6px);
-    color: var(--text-secondary, #C9A96E);
-    font-size: 18px;
+    border-radius: var(--radius-sm, 8px);
+    color: var(--text-secondary, #E8D4A8);
+    font-size: 20px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .zoom-btn:hover {
-    background: rgba(212, 168, 83, 0.15);
+    background: rgba(212, 168, 83, 0.18);
     color: var(--gold-light, #F0D68A);
     border-color: var(--gold-primary, #D4A853);
-    box-shadow: 0 0 12px rgba(212, 168, 83, 0.15);
+    box-shadow: 0 0 16px rgba(212, 168, 83, 0.2);
+    transform: scale(1.1) rotate(5deg);
 }
 
 .zoom-btn:active {
-    transform: scale(0.92);
+    transform: scale(1.05) rotate(0deg);
 }
 
 /* 小地图 */
@@ -301,13 +321,19 @@
     position: fixed;
     bottom: 200px;
     left: 24px;
-    width: 180px;
-    height: 130px;
+    width: 190px;
+    height: 140px;
     background: var(--bg-glass, rgba(42, 33, 24, 0.75));
     backdrop-filter: blur(10px);
     border-radius: var(--radius-md, 12px);
     border: 1px solid var(--border-subtle, rgba(212, 168, 83, 0.15));
     overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.minimap:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .minimap svg {
@@ -316,7 +342,8 @@
 }
 
 .minimap-viewport {
-    fill: rgba(212, 168, 83, 0.15);
+    fill: rgba(212, 168, 83, 0.18);
     stroke: var(--gold-primary, #D4A853);
     stroke-width: 2;
+    transition: all 0.3s ease;
 }

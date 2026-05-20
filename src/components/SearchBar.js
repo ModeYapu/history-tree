@@ -138,7 +138,7 @@ class SearchBar {
     
     showResults() {
         // 清空结果容器
-        this.resultsContainer.innerHTML = '';
+        this.resultsContainer.replaceChildren();
 
         if (this.results.length === 0) {
             const noResults = document.createElement('div');

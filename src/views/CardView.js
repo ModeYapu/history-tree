@@ -36,7 +36,7 @@ class CardView {
     }
     
     render() {
-        this.container.innerHTML = '';
+        this.container.replaceChildren();
         
         const grid = document.createElement('div');
         grid.className = 'card-grid';
@@ -215,10 +215,18 @@ class CardView {
             return current && current[key] !== undefined ? current[key] : undefined;
         }, obj);
     }
-    
+
     destroy() {
+        // 清理容器
         this.hide();
+        this.container = null;
+
+        // 清理数据引用
+        this.cards = [];
+        this.config = null;
+
         this.app.eventBus.emit('view:destroy', { view: 'cards' });
+        this.app = null;
     }
 }
 

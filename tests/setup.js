@@ -1,5 +1,21 @@
 // Jest DOM 测试设置
-import '@testing-library/jest-dom';
+// 使用require而不是import以避免ES模块问题
+
+try {
+  require('@testing-library/jest-dom');
+} catch (e) {
+  console.warn('@testing-library/jest-dom not available, skipping setup');
+}
+
+// 加载源码模块到全局
+try {
+  global.window = global;
+  require('../src/core/EventBus.js');
+  require('../src/models/HistoryNode.js');
+  require('../src/core/StateManager.js');
+} catch (e) {
+  console.warn('Failed to load source modules:', e.message);
+}
 
 // Mock D3.js
 global.d3 = {

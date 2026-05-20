@@ -413,7 +413,12 @@ class EnhancedAIChat {
     if (type === 'error') {
       contentDiv.textContent = content;
     } else {
-      contentDiv.innerHTML = formattedContent;
+      // 使用SecurityUtils安全地设置内容
+      if (window.SecurityUtils) {
+        window.SecurityUtils.setSafeContent(contentDiv, formattedContent, true);
+      } else {
+        contentDiv.innerHTML = formattedContent;
+      }
     }
 
     messageEl.appendChild(contentDiv);
@@ -498,6 +503,45 @@ class EnhancedAIChat {
   toggle() {
     this.isOpen = !this.isOpen;
     this.container.style.display = this.isOpen ? 'flex' : 'none';
+  }
+
+  /**
+   * 销毁组件，清理资源防止内存泄漏
+   */
+  destroy() {
+    // 清理MCP客户端
+    if (this.mcpClient && typeof this.mcpClient.disconnect === 'function') {
+      this.mcpClient.disconnect();
+      this.mcpClient = null;
+    }
+
+    // 清理事件监听器
+    if (this.container) {
+      const sendBtn = this.container.querySelector('.send-btn');
+      const input = this.container.querySelector('input');
+      const closeBtn = this.container.querySelector('.close-btn');
+      const quickActionBtns = this.container.querySelectorAll('.quick-action-btn');
+
+      if (sendBtn) sendBtn.replaceWith(sendBtn.cloneNode(true));
+      if (input) input.replaceWith(input.cloneNode(true));
+      if (closeBtn) closeBtn.replaceWith(closeBtn.cloneNode(true));
+      quickActionBtns.forEach(btn => btn.replaceWith(btn.cloneNode(true)));
+    }
+
+    // 清理定时器
+    if (this.typingTimer) {
+      clearTimeout(this.typingTimer);
+      this.typingTimer = null;
+    }
+
+    // 清理容器
+    if (this.container && this.container.parentNode) {
+      this.container.parentNode.removeChild(this.container);
+    }
+
+    this.container = null;
+    this.messages = [];
+    this.app = null;
   }
 }
 

@@ -9,17 +9,132 @@ class AIConnectionEngine {
         this.model = 'claude-3.5-sonnet';
         this.cache = new Map();
         
-        // API配置（实际使用时配置）
-        this.apiConfig = {
+        // API配置 - 从配置管理器安全获取
+        this.apiConfig = this.initializeAPIConfig();
+    }
+
+    /**
+     * 安全初始化API配置
+     * 不在客户端代码中存储敏感信息
+     */
+    initializeAPIConfig() {
+        // 检查是否有配置管理器
+        if (window.configManager) {
+            return {
+                anthropic: {
+                    // 不存储API密钥，使用配置管理器
+                    model: window.configManager.get('ai.models.anthropic', 'claude-3-5-sonnet-20241022'),
+                    timeout: window.configManager.get('app.apiTimeout', 30000)
+                },
+                openai: {
+                    model: window.configManager.get('ai.models.openai', 'gpt-4-turbo-preview'),
+                    timeout: window.configManager.get('app.apiTimeout', 30000)
+                },
+                deepseek: {
+                    model: window.configManager.get('ai.models.deepseek', 'deepseek-chat'),
+                    timeout: window.configManager.get('app.apiTimeout', 30000)
+                },
+                gemini: {
+                    model: window.configManager.get('ai.models.gemini', 'gemini-3.0'),
+                    timeout: window.configManager.get('app.apiTimeout', 30000)
+                }
+            };
+        }
+
+        // 默认配置（不包含API密钥）
+        return {
             anthropic: {
-                apiKey: null, // 从环境变量或配置文件读取
-                model: 'claude-3-5-sonnet-20241022'
+                model: 'claude-3-5-sonnet-20241022',
+                timeout: 30000
             },
             openai: {
-                apiKey: null,
-                model: 'gpt-4-turbo-preview'
+                model: 'gpt-4-turbo-preview',
+                timeout: 30000
             }
         };
+    }
+
+    /**
+     * 安全地调用API
+     * 通过服务器代理避免暴露API密钥
+     */
+    async callAPI(provider, prompt, options = {}) {
+        try {
+            // 验证提供商
+            const validProviders = ['anthropic', 'openai', 'deepseek', 'gemini'];
+            if (!validProviders.includes(provider)) {
+                throw new Error(`Invalid AI provider: ${provider}`);
+            }
+
+            // 清理输入
+            const sanitizedPrompt = this.sanitizeInput(prompt);
+
+            // 通过服务器代理调用API
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), this.apiConfig[provider]?.timeout || 30000);
+
+            const response = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': this.getCsrfToken()
+                },
+                body: JSON.stringify({
+                    provider,
+                    prompt: sanitizedPrompt,
+                    model: this.apiConfig[provider]?.model,
+                    options
+                }),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            // 验证响应数据
+            if (!data || typeof data !== 'object') {
+                throw new Error('Invalid API response format');
+            }
+
+            return data;
+        } catch (error) {
+            if (window.ErrorHandler) {
+                window.ErrorHandler.handle(error, 'AIConnectionEngine.callAPI', false);
+            }
+            console.error('AI API call failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * 清理用户输入
+     */
+    sanitizeInput(input) {
+        if (!input || typeof input !== 'string') return '';
+
+        // 优先使用SecurityUtils
+        if (window.SecurityUtils && typeof window.SecurityUtils.sanitizeUserInput === 'function') {
+            return window.SecurityUtils.sanitizeUserInput(input);
+        }
+
+        // 移除危险字符
+        let cleaned = input.replace(/<script[^>]*>.*?<\/script>/gi, '');
+        cleaned = cleaned.replace(/javascript:/gi, '');
+        cleaned = cleaned.replace(/on\w+\s*=/gi, '');
+
+        return cleaned.trim();
+    }
+
+    /**
+     * 获取CSRF令牌
+     */
+    getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     }
     
     /**
@@ -109,18 +224,21 @@ class AIConnectionEngine {
      */
     async findAIConnections(node, options) {
         const prompt = this.buildConnectionPrompt(node);
-        
+
         try {
             // 调用大模型API
             const response = await this.callAI(prompt);
-            
+
             // 解析AI响应
             const connections = this.parseAIResponse(response, node);
-            
+
             return connections;
         } catch (error) {
+            if (window.ErrorHandler) {
+                window.ErrorHandler.handle(error, 'AIConnectionEngine.findAIConnections', false);
+            }
             console.error('AI connection discovery failed:', error);
-            
+
             // 降级到规则引擎
             return this.fallbackConnections(node);
         }
@@ -430,9 +548,25 @@ class AIConnectionEngine {
      * 深度问答
      */
     async answerQuestion(question, context = {}) {
+        // 验证输入
+        if (!question || typeof question !== 'string') {
+            if (window.ErrorHandler) {
+                window.ErrorHandler.handle(new Error('Invalid question input'), 'AIConnectionEngine.answerQuestion', false);
+            }
+            return {
+                answer: '问题格式不正确',
+                evidence: [],
+                connections: [],
+                deepInsight: '',
+                exploreSuggestions: []
+            };
+        }
+
+        const sanitizedQuestion = this.sanitizeInput(question);
+
         const prompt = `作为历史发现引擎，回答以下问题：
 
-问题：${question}
+问题：${sanitizedQuestion}
 
 上下文：
 ${context.currentNode ? `当前查看：${context.currentNode.name}` : ''}
@@ -458,13 +592,29 @@ ${context.currentNode ? `当前查看：${context.currentNode.name}` : ''}
   "exploreSuggestions": ["建议探索的方向1", "建议探索的方向2"]
 }`;
 
-        const response = await this.callAI(prompt);
-        
         try {
-            return JSON.parse(response);
+            const response = await this.callAI(prompt);
+
+            try {
+                return JSON.parse(response);
+            } catch (parseError) {
+                if (window.ErrorHandler) {
+                    window.ErrorHandler.handle(parseError, 'AIConnectionEngine.answerQuestion parse', false);
+                }
+                return {
+                    answer: response,
+                    evidence: [],
+                    connections: [],
+                    deepInsight: '',
+                    exploreSuggestions: []
+                };
+            }
         } catch (error) {
+            if (window.ErrorHandler) {
+                window.ErrorHandler.handle(error, 'AIConnectionEngine.answerQuestion', false);
+            }
             return {
-                answer: response,
+                answer: '抱歉，无法获取回答，请稍后重试',
                 evidence: [],
                 connections: [],
                 deepInsight: '',

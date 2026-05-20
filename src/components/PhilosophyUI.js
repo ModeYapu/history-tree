@@ -215,7 +215,7 @@ class PhilosophyUI {
     
     renderDiscovery(discovery) {
         const container = this.container.querySelector('.discovery-content');
-        container.innerHTML = '';
+        container.replaceChildren();
 
         if (!discovery || (!discovery.causal?.length && !discovery.dialectical?.length)) {
             const emptyDiv = document.createElement('div');
@@ -319,7 +319,7 @@ class PhilosophyUI {
     
     renderPhilosophy(philosophy) {
         const container = this.container.querySelector('.philosophy-content-inner');
-        container.innerHTML = '';
+        container.replaceChildren();
 
         const dimensions = [
             { key: 'ontological', name: '本体论', icon: '🎯' },
@@ -397,7 +397,7 @@ class PhilosophyUI {
     
     renderPerspectives(perspectives) {
         const container = this.container.querySelector('.perspectives-content');
-        container.innerHTML = '';
+        container.replaceChildren();
 
         if (!perspectives || Object.keys(perspectives).length === 0) {
             const emptyDiv = document.createElement('div');
@@ -438,7 +438,7 @@ class PhilosophyUI {
     
     renderWisdom(wisdom) {
         const container = this.container.querySelector('.wisdom-content');
-        container.innerHTML = '';
+        container.replaceChildren();
 
         if (!wisdom) {
             const emptyDiv = document.createElement('div');
@@ -551,7 +551,7 @@ class PhilosophyUI {
     
     showLoading() {
         const container = this.container.querySelector('.philosophy-content');
-        container.innerHTML = '';
+        container.replaceChildren();
 
         const loadingDiv = document.createElement('div');
         loadingDiv.style.cssText = `
@@ -584,6 +584,40 @@ class PhilosophyUI {
     
     hideLoading() {
         // 加载完成，内容由renderAnalysis填充
+    }
+
+    /**
+     * 销毁组件，清理资源防止内存泄漏
+     */
+    destroy() {
+        // 清理事件监听器
+        if (this.container) {
+            const closeBtn = this.container.querySelector('.close-btn');
+            const questionInput = this.container.querySelector('.question-input');
+
+            if (closeBtn) {
+                const newBtn = closeBtn.cloneNode(true);
+                closeBtn.parentNode.replaceChild(newBtn, closeBtn);
+            }
+            if (questionInput) {
+                const newInput = questionInput.cloneNode(true);
+                questionInput.parentNode.replaceChild(newInput, questionInput);
+            }
+        }
+
+        // 清理定时器
+        if (this.analysisTimer) {
+            clearTimeout(this.analysisTimer);
+            this.analysisTimer = null;
+        }
+
+        // 清理容器
+        if (this.container && this.container.parentNode) {
+            this.container.parentNode.removeChild(this.container);
+        }
+
+        this.container = null;
+        this.app = null;
     }
 }
 

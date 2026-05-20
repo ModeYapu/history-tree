@@ -31,9 +31,10 @@
             --gold-light: #F0D68A;
             --gold-dark: #B8860B;
             --brown-light: #C9A96E;
-            --text-primary: #F5E6C8;
-            --text-secondary: #C9A96E;
-            --text-muted: #8B7355;
+            /* 文字对比度优化 */
+            --text-primary: #FFF5E0;
+            --text-secondary: #F0D68A;
+            --text-muted: #C9A96E;
             --border-subtle: rgba(212, 168, 83, 0.15);
             --border-active: rgba(212, 168, 83, 0.4);
         }
@@ -95,7 +96,12 @@
             align-items: center;
             padding: 0 28px;
             z-index: 100;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .top-nav:hover {
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
         }
 
         .top-nav::after {
@@ -140,22 +146,42 @@
             background: transparent;
             border: 1px solid var(--border-subtle);
             color: var(--text-secondary);
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 10px 18px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
+            font-weight: 500;
             font-family: 'Noto Serif SC', serif;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 168, 83, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
         }
 
         .nav-btn:hover {
-            background: rgba(212, 168, 83, 0.1);
+            background: rgba(212, 168, 83, 0.12);
             border-color: var(--border-active);
             color: var(--gold-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 168, 83, 0.2);
         }
 
         .nav-btn:active {
-            transform: scale(0.96);
+            transform: translateY(0) scale(0.98);
         }
 
         .nav-btn.active {
@@ -163,21 +189,31 @@
             border-color: transparent;
             color: var(--bg-primary);
             font-weight: 600;
+            box-shadow: 0 4px 12px rgba(212, 168, 83, 0.3);
         }
 
         .status-bar {
             margin-left: auto;
             display: flex;
             align-items: center;
-            gap: 20px;
-            font-size: 12px;
+            gap: 24px;
+            font-size: 13px;
             color: var(--text-muted);
+            font-weight: 500;
         }
 
         .status-item {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .status-item:hover {
+            background: rgba(212, 168, 83, 0.08);
+            color: var(--text-secondary);
         }
 
         /* 主视图容器 */
@@ -204,31 +240,32 @@
         }
 
         .loading-tree {
-            font-size: 80px;
+            font-size: 90px;
             animation: loadingGrow 2s ease-in-out infinite;
-            filter: drop-shadow(0 0 20px rgba(212, 168, 83, 0.3));
+            filter: drop-shadow(0 0 24px rgba(212, 168, 83, 0.4));
         }
 
         @keyframes loadingGrow {
             0%, 100% { transform: scale(1) rotate(-1deg); }
-            25% { transform: scale(1.08) rotate(1deg); }
-            50% { transform: scale(1.02) rotate(0deg); }
-            75% { transform: scale(1.05) rotate(-0.5deg); }
+            25% { transform: scale(1.1) rotate(1deg); }
+            50% { transform: scale(1.05) rotate(0deg); }
+            75% { transform: scale(1.08) rotate(-0.5deg); }
         }
 
         .loading-text {
-            margin-top: 28px;
-            font-size: 17px;
+            margin-top: 32px;
+            font-size: 18px;
             color: var(--gold-primary);
             letter-spacing: 2px;
+            font-weight: 600;
         }
 
         .loading-progress {
-            margin-top: 20px;
-            width: 240px;
-            height: 3px;
-            background: rgba(212, 168, 83, 0.1);
-            border-radius: 3px;
+            margin-top: 24px;
+            width: 260px;
+            height: 4px;
+            background: rgba(212, 168, 83, 0.12);
+            border-radius: 4px;
             overflow: hidden;
         }
 
@@ -236,7 +273,7 @@
             height: 100%;
             background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary), var(--gold-light));
             animation: progressFill 2.5s ease-in-out forwards;
-            border-radius: 3px;
+            border-radius: 4px;
         }
 
         @keyframes progressFill {
@@ -532,56 +569,57 @@
                 position: fixed;
                 top: 84px;
                 right: 24px;
-                background: linear-gradient(145deg, rgba(42, 33, 24, 0.97), rgba(26, 20, 16, 0.99));
+                background: linear-gradient(145deg, rgba(42, 33, 24, 0.98), rgba(26, 20, 16, 0.99));
                 backdrop-filter: blur(20px);
-                padding: 24px;
+                padding: 26px;
                 border-radius: 12px;
-                border: 1px solid rgba(212, 168, 83, 0.2);
-                max-width: 360px;
+                border: 1px solid rgba(212, 168, 83, 0.25);
+                max-width: 380px;
                 z-index: 1000;
-                animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+                animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
                 font-family: 'Noto Serif SC', serif;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
             `;
             
             notification.innerHTML = `
-                <div style="display: flex; align-items: center; margin-bottom: 16px;">
-                    <span style="font-size: 32px; margin-right: 12px; filter: drop-shadow(0 0 8px rgba(212, 168, 83, 0.3));">🌳</span>
+                <div style="display: flex; align-items: center; margin-bottom: 18px;">
+                    <span style="font-size: 36px; margin-right: 14px; filter: drop-shadow(0 0 10px rgba(212, 168, 83, 0.4));">🌳</span>
                     <div>
-                        <div style="font-weight: bold; font-size: 16px; color: #F0D68A; letter-spacing: 1px;">欢迎使用历史之树 v4.4</div>
-                        <div style="font-size: 12px; color: #8B7355;">AI驱动的历史发现引擎</div>
+                        <div style="font-weight: bold; font-size: 17px; color: #F0D68A; letter-spacing: 1px;">欢迎使用历史之树 v4.4</div>
+                        <div style="font-size: 13px; color: #C9A96E; margin-top: 2px;">AI驱动的历史发现引擎</div>
                     </div>
                 </div>
 
-                <div style="font-size: 13px; color: #C9A96E; line-height: 1.8; margin-bottom: 16px;">
+                <div style="font-size: 14px; color: #F0D68A; line-height: 1.8; margin-bottom: 18px;">
                     探索历史之树，发现隐藏的历史关联，进行深度的哲学思辨。
                 </div>
 
-                <div style="font-size: 12px; color: #8B7355; margin-bottom: 16px; line-height: 1.8;">
-                    <div style="margin-bottom: 6px; color: #D4A853;">✨ 核心功能：</div>
+                <div style="font-size: 13px; color: #C9A96E; margin-bottom: 18px; line-height: 2;">
+                    <div style="margin-bottom: 8px; color: #D4A853; font-weight: 600;">✨ 核心功能：</div>
                     <div>• 🌲 3D漂浮的历史之树</div>
                     <div>• 🤖 AI哲学思辨引擎</div>
                     <div>• 🔍 智能关联发现</div>
                     <div>• 💭 多维度历史分析</div>
                 </div>
 
-                <div style="font-size: 11px; color: #8B7355; margin-bottom: 16px; border-top: 1px solid rgba(212, 168, 83, 0.1); padding-top: 12px;">
+                <div style="font-size: 12px; color: #C9A96E; margin-bottom: 18px; border-top: 1px solid rgba(212, 168, 83, 0.15); padding-top: 14px;">
                     快捷键：Ctrl+1-5 切换视图 | Ctrl+K 搜索 | Ctrl+E 导出
                 </div>
 
                 <button onclick="this.parentElement.remove()" style="
                     width: 100%;
-                    padding: 11px;
+                    padding: 12px;
                     background: linear-gradient(135deg, #D4A853, #B8860B);
                     color: #1a1410;
                     border: none;
                     border-radius: 8px;
                     cursor: pointer;
-                    font-size: 13px;
+                    font-size: 14px;
                     font-weight: bold;
                     font-family: 'Noto Serif SC', serif;
                     letter-spacing: 1px;
-                    transition: all 0.3s;
-                ">开始探索历史之树</button>
+                    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(212, 168, 83, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">开始探索历史之树</button>
             `;
             
             document.body.appendChild(notification);
@@ -624,7 +662,7 @@
         style.textContent = `
             @keyframes slideIn {
                 from {
-                    transform: translateX(400px);
+                    transform: translateX(450px);
                     opacity: 0;
                 }
                 to {
@@ -634,7 +672,7 @@
             }
             @keyframes chatSlideIn {
                 from {
-                    transform: translateY(20px) scale(0.95);
+                    transform: translateY(30px) scale(0.95);
                     opacity: 0;
                 }
                 to {
@@ -643,7 +681,7 @@
                 }
             }
             @keyframes msgFadeIn {
-                from { opacity: 0; transform: translateY(8px); }
+                from { opacity: 0; transform: translateY(12px); }
                 to { opacity: 1; transform: translateY(0); }
             }
             @keyframes typingDot {
@@ -655,25 +693,25 @@
                 to { opacity: 1; }
             }
             @keyframes cardSlideIn {
-                from { transform: translateY(30px) scale(0.95); opacity: 0; }
+                from { transform: translateY(40px) scale(0.95); opacity: 0; }
                 to { transform: translateY(0) scale(1); opacity: 1; }
             }
             /* 节点卡片滚动条 */
-            .node-card::-webkit-scrollbar { width: 4px; }
+            .node-card::-webkit-scrollbar { width: 6px; }
             .node-card::-webkit-scrollbar-track { background: transparent; }
             .node-card::-webkit-scrollbar-thumb {
-                background: rgba(212, 168, 83, 0.2);
-                border-radius: 4px;
+                background: rgba(212, 168, 83, 0.25);
+                border-radius: 6px;
             }
             /* 滚动条美化 */
-            .chat-messages::-webkit-scrollbar { width: 4px; }
+            .chat-messages::-webkit-scrollbar { width: 6px; }
             .chat-messages::-webkit-scrollbar-track { background: transparent; }
             .chat-messages::-webkit-scrollbar-thumb {
-                background: rgba(212, 168, 83, 0.2);
-                border-radius: 4px;
+                background: rgba(212, 168, 83, 0.25);
+                border-radius: 6px;
             }
             .chat-messages::-webkit-scrollbar-thumb:hover {
-                background: rgba(212, 168, 83, 0.4);
+                background: rgba(212, 168, 83, 0.45);
             }
         `;
         document.head.appendChild(style);

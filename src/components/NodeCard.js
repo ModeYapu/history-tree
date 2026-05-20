@@ -107,7 +107,7 @@ class NodeCard {
         const catColor = this.getCategoryAccent(node.category?.primary);
 
         // 清空现有内容
-        this.card.innerHTML = '';
+        this.card.replaceChildren();
 
         // 顶部装饰线
         const topLine = document.createElement('div');
@@ -478,12 +478,29 @@ class NodeCard {
         };
         return colors[category] || '#D4A853';
     }
-    
+
     destroy() {
+        // 清理键盘事件监听器
         if (this._escHandler) {
             document.removeEventListener('keydown', this._escHandler);
+            this._escHandler = null;
         }
-        if (this.container) this.container.remove();
+
+        // 清理容器
+        if (this.container) {
+            this.container.remove();
+            this.container = null;
+        }
+
+        // 清理卡片引用
+        if (this.card && this.card.parentNode) {
+            this.card.remove();
+        }
+        this.card = null;
+
+        // 清理app引用
+        this.app = null;
+        this.node = null;
     }
 }
 

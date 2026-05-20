@@ -713,11 +713,62 @@ class HistoryTree3D {
     }
     
     hide() { if (this.container) this.container.remove(); }
-    
+
     destroy() {
+        // 停止动画循环
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+
+        // 清理Three.js场景对象
+        if (this.scene) {
+            this.scene.traverse((object) => {
+                if (object.geometry) {
+                    object.geometry.dispose();
+                }
+                if (object.material) {
+                    if (Array.isArray(object.material)) {
+                        object.material.forEach(material => material.dispose());
+                    } else {
+                        object.material.dispose();
+                    }
+                }
+                if (object.texture) {
+                    object.texture.dispose();
+                }
+            });
+            this.scene.clear();
+        }
+
+        // 清理渲染器
+        if (this.renderer) {
+            this.renderer.dispose();
+            if (this.renderer.domElement && this.renderer.domElement.parentNode) {
+                this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
+            }
+            this.renderer = null;
+        }
+
+        // 清理相机
+        if (this.camera) {
+            this.camera = null;
+        }
+
+        // 清理控制器
+        if (this.controls) {
+            if (typeof this.controls.dispose === 'function') {
+                this.controls.dispose();
+            }
+            this.controls = null;
+        }
+
+        // 清理容器
         this.hide();
-        if (this.renderer) this.renderer.dispose();
+        this.container = null;
+
         this.app.eventBus.emit('view:destroy', { view: 'tree3d' });
+        this.app = null;
     }
 }
 

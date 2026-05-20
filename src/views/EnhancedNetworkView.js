@@ -552,11 +552,38 @@ class EnhancedNetworkView {
     hide() {
         if (this.container) this.container.remove();
     }
-    
+
     destroy() {
+        // 停止模拟
+        if (this.simulation) {
+            this.simulation.stop();
+            this.simulation = null;
+        }
+
+        // 清理SVG
+        if (this.svg) {
+            this.svg.selectAll('*').remove();
+            if (this.svg.node() && this.svg.node().parentNode) {
+                this.svg.node().parentNode.removeChild(this.svg.node());
+            }
+            this.svg = null;
+        }
+
+        // 清理提示框
+        d3.selectAll('.node-tooltip').remove();
+        d3.selectAll('.link-tooltip').remove();
+
+        // 清理容器
         this.hide();
-        if (this.simulation) this.simulation.stop();
+        this.container = null;
+
+        // 清理缩放行为
+        if (this.zoom) {
+            this.zoom = null;
+        }
+
         this.app.eventBus.emit('view:destroy', { view: 'network' });
+        this.app = null;
     }
 }
 
