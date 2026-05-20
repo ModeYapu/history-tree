@@ -108,7 +108,12 @@ class HistoryNode {
     }
     
     static fromJSON(json) {
-        const node = new HistoryNode(json);
+        // Extract year from time.year if available, for backward compatibility
+        const data = { ...json };
+        if (json.time && json.time.year !== undefined) {
+            data.year = json.time.year;
+        }
+        const node = new HistoryNode(data);
         if (json.children && Array.isArray(json.children)) {
             node.children = json.children.map(c => HistoryNode.fromJSON(c));
         }

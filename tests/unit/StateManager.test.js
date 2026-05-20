@@ -11,8 +11,20 @@ describe('StateManager', () => {
   });
 
   beforeEach(() => {
+    // Mock console functions
+    jest.spyOn(console, 'group').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'groupEnd').mockImplementation(() => {});
+
     eventBus = new EventBus();
     stateManager = new StateManager(eventBus);
+  });
+
+  afterEach(() => {
+    // Restore console functions
+    console.group.mockRestore();
+    console.log.mockRestore();
+    console.groupEnd.mockRestore();
   });
 
   describe('getState()', () => {
