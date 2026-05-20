@@ -55,8 +55,10 @@ global.L = {
 // Load new modules
 global.window = global;
 try { require('../src/views/MapView.js'); } catch (e) { console.warn('Failed to load MapView:', e.message); }
+try { require('../src/views/NetworkView.js'); } catch (e) { console.warn('Failed to load NetworkView:', e.message); }
 try { require('../src/services/QuizEngine.js'); } catch (e) { console.warn('Failed to load QuizEngine:', e.message); }
 try { require('../src/plugins/TimelinePlugin.js'); } catch (e) { console.warn('Failed to load TimelinePlugin:', e.message); }
+try { require('../src/plugins/CollectionPlugin.js'); } catch (e) { console.warn('Failed to load CollectionPlugin:', e.message); }
 
 // Mock D3.js
 global.d3 = {
