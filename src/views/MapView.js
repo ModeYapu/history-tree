@@ -1,8 +1,7 @@
 /**
- * 地图视图 - 地理可视化 v2.0
- * 支持缩放、拖拽、时间轴联动、地点详情弹窗
+ * 地图视图 - 地理可视化 v3.0 视觉革命版
+ * 深色地图底图、朝代疆域覆盖、历史地标、小地图导航
  */
-
 class MapView {
     static PERIODS = [
         { name: '春秋', start: -770, end: -476, color: '#8B4513' },
@@ -20,7 +19,7 @@ class MapView {
         culture: '#a855f7',
         economy: '#22c55e',
         military: '#f97316',
-        default: '#999'
+        default: '#D4A853'
     };
 
     static CATEGORY_NAMES = {
@@ -30,6 +29,64 @@ class MapView {
         economy: '经济',
         military: '军事'
     };
+
+    // 朝代疆域数据（简化 GeoJSON 边界框）
+    static DYNASTY_TERRITORIES = [
+        {
+            name: '秦', year: -221, color: '#4A4A4A',
+            bounds: [[25, 100], [42, 120]],
+            desc: '秦朝统一六国疆域'
+        },
+        {
+            name: '汉', year: -100, color: '#CD853F',
+            bounds: [[18, 95], [45, 125]],
+            desc: '汉朝鼎盛时期疆域'
+        },
+        {
+            name: '唐', year: 700, color: '#DAA520',
+            bounds: [[20, 85], [50, 130]],
+            desc: '唐朝鼎盛时期疆域'
+        },
+        {
+            name: '宋', year: 1100, color: '#4A90E2',
+            bounds: [[22, 105], [42, 125]],
+            desc: '宋朝疆域'
+        },
+        {
+            name: '元', year: 1280, color: '#2E8B57',
+            bounds: [[15, 75], [55, 140]],
+            desc: '元朝疆域（蒙古帝国）'
+        },
+        {
+            name: '明', year: 1450, color: '#C0392B',
+            bounds: [[18, 98], [50, 130]],
+            desc: '明朝疆域'
+        },
+        {
+            name: '清', year: 1790, color: '#8B0000',
+            bounds: [[15, 75], [55, 140]],
+            desc: '清朝鼎盛时期疆域'
+        }
+    ];
+
+    // 历史地标数据
+    static LANDMARKS = [
+        { name: '长城', type: 'wall', coords: [40.4, 116.5], icon: '🏯', minZoom: 3, desc: '世界文化遗产' },
+        { name: '丝绸之路（起点）', type: 'road', coords: [34.3, 108.9], icon: '🐪', minZoom: 3, desc: '长安出发', path: [[34.3, 108.9], [36.0, 103.8], [39.5, 98.5], [40.1, 94.7], [43.8, 87.6]] },
+        { name: '大运河', type: 'water', coords: [34.0, 117.0], icon: '🚢', minZoom: 4, desc: '隋唐大运河' },
+        { name: '敦煌', type: 'culture', coords: [40.1, 94.7], icon: '🏛️', minZoom: 4, desc: '莫高窟' },
+        { name: '长安', type: 'capital', coords: [34.3, 108.9], icon: '👑', minZoom: 5, desc: '十三朝古都' },
+        { name: '洛阳', type: 'capital', coords: [34.6, 112.4], icon: '👑', minZoom: 5, desc: '九朝古都' },
+        { name: '北京', type: 'capital', coords: [39.9, 116.4], icon: '👑', minZoom: 5, desc: '元明清都城' },
+        { name: '南京', type: 'capital', coords: [32.1, 118.8], icon: '👑', minZoom: 5, desc: '六朝古都' },
+        { name: '杭州', type: 'capital', coords: [30.3, 120.2], icon: '🏯', minZoom: 5, desc: '南宋都城' },
+        { name: '开封', type: 'capital', coords: [34.8, 114.3], icon: '🏯', minZoom: 5, desc: '北宋都城' },
+        { name: '秦始皇陵', type: 'tomb', coords: [34.4, 109.3], icon: '⚰️', minZoom: 5, desc: '兵马俑' },
+        { name: '都江堰', type: 'engineering', coords: [31.0, 103.6], icon: '💧', minZoom: 5, desc: '古代水利工程' },
+        { name: '成都', type: 'city', coords: [30.6, 104.1], icon: '🎋', minZoom: 5, desc: '天府之国' },
+        { name: '广州', type: 'port', coords: [23.1, 113.3], icon: '⛵', minZoom: 5, desc: '海上丝绸之路起点' },
+        { name: '泉州', type: 'port', coords: [24.9, 118.6], icon: '⛵', minZoom: 5, desc: '宋元第一大港' },
+    ];
 
     static CONFIG = {
         center: [35, 105],
@@ -50,6 +107,10 @@ class MapView {
         this.map = null;
         this.markers = [];
         this.markerClusters = [];
+        this.territoryLayers = [];
+        this.landmarkMarkers = [];
+        this.landmarkLabels = [];
+        this.miniMap = null;
 
         this.config = { ...MapView.CONFIG };
         this.timeRange = { start: MapView.TIME_RANGE.min, end: MapView.TIME_RANGE.max };
@@ -58,6 +119,8 @@ class MapView {
         this.eventListeners = [];
 
         this.uiElements = {};
+        this.showTerritories = true;
+        this.showLandmarks = true;
     }
 
     show(options = {}) {
@@ -72,6 +135,9 @@ class MapView {
         document.querySelector(this.app.options.container).appendChild(this.container);
 
         this.initMap();
+        this.addTerritories();
+        this.addLandmarks();
+        this.initMiniMap();
         this.initControls();
         this.initTimeline();
         this.loadData();
@@ -82,6 +148,10 @@ class MapView {
 
     hide() {
         this.removeEventListeners();
+        if (this.miniMap) {
+            this.miniMap.remove();
+            this.miniMap = null;
+        }
         if (this.map) {
             this.map.remove();
             this.map = null;
@@ -91,44 +161,207 @@ class MapView {
         }
     }
 
-    /**
-     * 初始化地图
-     */
     initMap() {
-        // 使用Leaflet创建地图
         this.map = L.map(this.container, {
             center: this.config.center,
             zoom: this.config.zoom,
             minZoom: this.config.minZoom,
             maxZoom: this.config.maxZoom,
-            zoomControl: false
+            zoomControl: false,
+            attributionControl: false
         });
 
-        // 添加自定义缩放控制
-        L.control.zoom({
-            position: 'topright'
-        }).addTo(this.map);
-
-        // 添加地图图层
-        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 18
+        // 深色地图底图 - CartoDB Dark Matter
+        const darkTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© CartoDB © OpenStreetMap',
+            maxZoom: 19,
+            subdomains: 'abcd'
         });
-        tileLayer.addTo(this.map);
+        darkTile.addTo(this.map);
+        this.tileLayer = darkTile;
 
-        // 添加比例尺
+        // 自定义缩放控制（暗色风格）
+        L.control.zoom({ position: 'topright' }).addTo(this.map);
+
         L.control.scale({
             position: 'bottomleft',
             imperial: false
         }).addTo(this.map);
 
-        // 保存引用
-        this.tileLayer = tileLayer;
+        // 缩放事件
+        let zoomTimeout;
+        this.map.on('zoomend', () => {
+            clearTimeout(zoomTimeout);
+            zoomTimeout = setTimeout(() => {
+                this.reclusterMarkers();
+                this.updateLandmarkVisibility();
+            }, 300);
+        });
     }
 
-    /**
-     * 初始化控制面板
-     */
+    /** 添加朝代疆域覆盖 */
+    addTerritories() {
+        MapView.DYNASTY_TERRITORIES.forEach(dynasty => {
+            const [[s, w], [n, e]] = dynasty.bounds;
+            const polygon = L.polygon([
+                [n, w], [n, e], [s, e], [s, w]
+            ], {
+                color: dynasty.color,
+                weight: 1.5,
+                opacity: 0.6,
+                fillColor: dynasty.color,
+                fillOpacity: 0.08,
+                dashArray: '6, 3'
+            }).addTo(this.map);
+
+            polygon.bindTooltip(`${dynasty.name}朝疆域\n${dynasty.desc}`, {
+                className: 'dynasty-tooltip',
+                sticky: true
+            });
+
+            // 朝代名称标签
+            const centerLat = (n + s) / 2;
+            const centerLng = (w + e) / 2;
+            const label = L.marker([centerLat, centerLng], {
+                icon: L.divIcon({
+                    className: 'dynasty-label',
+                    html: `<div style="
+                        color: ${dynasty.color};
+                        font-family: 'Noto Serif SC', serif;
+                        font-size: 14px;
+                        font-weight: 700;
+                        text-shadow: 0 0 10px ${dynasty.color}, 0 0 20px ${dynasty.color}40;
+                        white-space: nowrap;
+                        pointer-events: none;
+                    ">${dynasty.name}</div>`,
+                    iconSize: [50, 20],
+                    iconAnchor: [25, 10]
+                }),
+                interactive: false
+            }).addTo(this.map);
+
+            this.territoryLayers.push({ polygon, label, dynasty });
+        });
+    }
+
+    /** 添加历史地标 */
+    addLandmarks() {
+        MapView.LANDMARKS.forEach(lm => {
+            // 丝绸之路用折线
+            if (lm.path) {
+                const latlngs = lm.path.map(p => [p[0], p[1]]);
+                const polyline = L.polyline(latlngs, {
+                    color: '#D4A853',
+                    weight: 2.5,
+                    opacity: 0.5,
+                    dashArray: '8, 6',
+                    className: 'silk-road-line'
+                }).addTo(this.map);
+
+                polyline.bindTooltip(lm.name, { sticky: true });
+                this.landmarkMarkers.push({ marker: polyline, landmark: lm });
+            }
+
+            // 标记图标
+            const icon = L.divIcon({
+                className: 'landmark-icon',
+                html: `<div class="landmark-marker" style="
+                    font-size: ${lm.type === 'capital' ? '24px' : '18px'};
+                    filter: drop-shadow(0 0 6px rgba(212, 168, 83, 0.6));
+                    transition: transform 0.2s;
+                    cursor: pointer;
+                " onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">${lm.icon}</div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            const marker = L.marker([lm.coords[0], lm.coords[1]], { icon })
+                .addTo(this.map);
+
+            marker.bindTooltip(`<b>${lm.name}</b><br>${lm.desc}`, {
+                className: 'landmark-tooltip',
+                direction: 'top'
+            });
+
+            this.landmarkMarkers.push({ marker, landmark: lm });
+        });
+
+        // 初始可见性
+        this.updateLandmarkVisibility();
+    }
+
+    /** 根据缩放级别动态显示/隐藏地标 */
+    updateLandmarkVisibility() {
+        const zoom = this.map.getZoom();
+        this.landmarkMarkers.forEach(({ marker, landmark }) => {
+            const visible = zoom >= (landmark.minZoom || 3);
+            if (visible) {
+                if (!this.map.hasLayer(marker)) marker.addTo(this.map);
+            } else {
+                if (this.map.hasLayer(marker)) marker.remove();
+            }
+        });
+    }
+
+    /** 初始化小地图 */
+    initMiniMap() {
+        const miniMapContainer = document.createElement('div');
+        miniMapContainer.style.cssText = `
+            position: absolute;
+            bottom: 90px;
+            right: 10px;
+            width: 160px;
+            height: 120px;
+            border: 2px solid rgba(212, 168, 83, 0.4);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1000;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+        `;
+        this.container.appendChild(miniMapContainer);
+
+        // 创建小地图
+        this.miniMap = L.map(miniMapContainer, {
+            center: this.config.center,
+            zoom: 2,
+            zoomControl: false,
+            attributionControl: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            touchZoom: false
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            subdomains: 'abcd'
+        }).addTo(this.miniMap);
+
+        // 视口矩形
+        this.miniMapRect = L.rectangle(this.map.getBounds(), {
+            color: '#D4A853',
+            weight: 2,
+            fillOpacity: 0.15,
+            fillColor: '#D4A853'
+        }).addTo(this.miniMap);
+
+        // 同步
+        this.map.on('move', () => {
+            this.miniMapRect.setBounds(this.map.getBounds());
+        });
+
+        // 点击小地图跳转
+        miniMapContainer.addEventListener('click', (e) => {
+            const rect = miniMapContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const latlng = this.miniMap.containerPointToLatLng([x, y]);
+            if (latlng) {
+                this.map.flyTo(latlng, this.map.getZoom(), { duration: 0.5 });
+            }
+        });
+    }
+
     initControls() {
         const controlsPanel = document.createElement('div');
         controlsPanel.className = 'map-controls';
@@ -136,21 +369,28 @@ class MapView {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: white;
+            background: rgba(20, 16, 10, 0.92);
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid rgba(212, 168, 83, 0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             z-index: 1000;
-            min-width: 200px;
+            min-width: 210px;
+            backdrop-filter: blur(10px);
+            color: #f0d68a;
+            font-family: 'Noto Serif SC', serif;
         `;
+
+        const labelStyle = 'display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px;';
+        const selectStyle = 'width: 100%; padding: 6px 8px; margin-bottom: 10px; border-radius: 4px; background: rgba(42,33,24,0.9); color: #f0d68a; border: 1px solid rgba(212,168,83,0.3); font-family: inherit;';
 
         // 分类筛选
         const categoryLabel = document.createElement('label');
         categoryLabel.textContent = '分类筛选:';
-        categoryLabel.style.cssText = 'display: block; font-weight: bold; margin-bottom: 5px;';
+        categoryLabel.style.cssText = labelStyle;
 
         const categorySelect = document.createElement('select');
-        categorySelect.style.cssText = 'width: 100%; padding: 5px; margin-bottom: 10px; border-radius: 4px;';
+        categorySelect.style.cssText = selectStyle;
         categorySelect.innerHTML = `
             <option value="">全部</option>
             <option value="politics">政治</option>
@@ -167,10 +407,10 @@ class MapView {
         // 时期筛选
         const periodLabel = document.createElement('label');
         periodLabel.textContent = '时期筛选:';
-        periodLabel.style.cssText = 'display: block; font-weight: bold; margin-bottom: 5px;';
+        periodLabel.style.cssText = labelStyle;
 
         const periodSelect = document.createElement('select');
-        periodSelect.style.cssText = 'width: 100%; padding: 5px; margin-bottom: 10px; border-radius: 4px;';
+        periodSelect.style.cssText = selectStyle;
         periodSelect.innerHTML = `
             <option value="">全部</option>
             ${this.periods.map(p => `<option value="${p.name}">${p.name} (${p.start} - ${p.end})</option>`).join('')}
@@ -180,17 +420,52 @@ class MapView {
             this.applyFilters();
         });
 
+        // 图层切换
+        const layerLabel = document.createElement('label');
+        layerLabel.textContent = '图层:';
+        layerLabel.style.cssText = labelStyle;
+
+        const territoryToggle = document.createElement('label');
+        territoryToggle.style.cssText = 'display: flex; align-items: center; gap: 6px; margin-bottom: 6px; cursor: pointer; font-size: 12px;';
+        territoryToggle.innerHTML = `<input type="checkbox" checked id="territoryToggle"> 疆域覆盖`;
+        territoryToggle.querySelector('input').addEventListener('change', (e) => {
+            this.showTerritories = e.target.checked;
+            this.territoryLayers.forEach(t => {
+                if (this.showTerritories) {
+                    t.polygon.addTo(this.map);
+                    t.label.addTo(this.map);
+                } else {
+                    t.polygon.remove();
+                    t.label.remove();
+                }
+            });
+        });
+
+        const landmarkToggle = document.createElement('label');
+        landmarkToggle.style.cssText = 'display: flex; align-items: center; gap: 6px; margin-bottom: 10px; cursor: pointer; font-size: 12px;';
+        landmarkToggle.innerHTML = `<input type="checkbox" checked id="landmarkToggle"> 历史地标`;
+        landmarkToggle.querySelector('input').addEventListener('change', (e) => {
+            this.showLandmarks = e.target.checked;
+            this.landmarkMarkers.forEach(({ marker }) => {
+                if (this.showLandmarks) {
+                    marker.addTo(this.map);
+                } else {
+                    marker.remove();
+                }
+            });
+        });
+
         // 重要性筛选
         const importanceLabel = document.createElement('label');
         importanceLabel.textContent = '最低重要性:';
-        importanceLabel.style.cssText = 'display: block; font-weight: bold; margin-bottom: 5px;';
+        importanceLabel.style.cssText = labelStyle;
 
         const importanceRange = document.createElement('input');
         importanceRange.type = 'range';
         importanceRange.min = '1';
         importanceRange.max = '5';
         importanceRange.value = '1';
-        importanceRange.style.cssText = 'width: 100%; margin-bottom: 5px;';
+        importanceRange.style.cssText = 'width: 100%; margin-bottom: 5px; accent-color: #D4A853;';
         importanceRange.addEventListener('input', (e) => {
             this.filters.minImportance = parseInt(e.target.value);
             importanceValue.textContent = e.target.value;
@@ -199,7 +474,7 @@ class MapView {
 
         const importanceValue = document.createElement('span');
         importanceValue.textContent = '1';
-        importanceValue.style.cssText = 'font-size: 12px; color: #666;';
+        importanceValue.style.cssText = 'font-size: 12px; color: #c9a96e;';
 
         // 重置按钮
         const resetBtn = document.createElement('button');
@@ -207,13 +482,21 @@ class MapView {
         resetBtn.style.cssText = `
             width: 100%;
             padding: 8px;
-            background: #667eea;
-            color: white;
-            border: none;
+            background: rgba(212, 168, 83, 0.15);
+            color: #D4A853;
+            border: 1px solid rgba(212, 168, 83, 0.3);
             border-radius: 4px;
             cursor: pointer;
             margin-top: 10px;
+            font-family: inherit;
+            transition: all 0.2s;
         `;
+        resetBtn.addEventListener('mouseenter', () => {
+            resetBtn.style.background = 'rgba(212, 168, 83, 0.3)';
+        });
+        resetBtn.addEventListener('mouseleave', () => {
+            resetBtn.style.background = 'rgba(212, 168, 83, 0.15)';
+        });
         resetBtn.addEventListener('click', () => this.resetFilters());
 
         // 统计信息
@@ -222,15 +505,18 @@ class MapView {
         statsDiv.style.cssText = `
             margin-top: 10px;
             padding-top: 10px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid rgba(212, 168, 83, 0.15);
             font-size: 12px;
-            color: #666;
+            color: #c9a96e;
         `;
 
         controlsPanel.appendChild(categoryLabel);
         controlsPanel.appendChild(categorySelect);
         controlsPanel.appendChild(periodLabel);
         controlsPanel.appendChild(periodSelect);
+        controlsPanel.appendChild(layerLabel);
+        controlsPanel.appendChild(territoryToggle);
+        controlsPanel.appendChild(landmarkToggle);
         controlsPanel.appendChild(importanceLabel);
         controlsPanel.appendChild(importanceRange);
         controlsPanel.appendChild(importanceValue);
@@ -244,9 +530,6 @@ class MapView {
         this.importanceRange = importanceRange;
     }
 
-    /**
-     * 初始化时间轴
-     */
     initTimeline() {
         const timelineContainer = document.createElement('div');
         timelineContainer.className = 'map-timeline';
@@ -255,36 +538,34 @@ class MapView {
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 60%;
-            background: white;
-            padding: 15px 20px;
+            width: 55%;
+            background: rgba(20, 16, 10, 0.92);
+            padding: 12px 18px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid rgba(212, 168, 83, 0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             z-index: 1000;
+            backdrop-filter: blur(10px);
         `;
 
-        // 时间轴标题
         const title = document.createElement('div');
-        title.textContent = '时间轴筛选';
-        title.style.cssText = 'font-weight: bold; margin-bottom: 10px; text-align: center;';
+        title.textContent = '⏳ 时间轴筛选';
+        title.style.cssText = 'font-weight: bold; margin-bottom: 8px; text-align: center; color: #D4A853; font-size: 13px;';
 
-        // 时间范围显示
         const rangeDisplay = document.createElement('div');
         rangeDisplay.className = 'time-range-display';
         rangeDisplay.style.cssText = `
             text-align: center;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #D4A853;
             font-weight: 500;
         `;
         rangeDisplay.textContent = `${this.formatYear(this.timeRange.start)} - ${this.formatYear(this.timeRange.end)}`;
 
-        // 时间轴滑块
         const sliderContainer = document.createElement('div');
         sliderContainer.style.cssText = 'position: relative; height: 40px;';
 
-        // 使用双滑块
         const minSlider = document.createElement('input');
         minSlider.type = 'range';
         minSlider.min = '-3000';
@@ -313,44 +594,37 @@ class MapView {
             z-index: 3;
         `;
 
-        // 轨道样式
         const track = document.createElement('div');
-        track.className = 'timeline-track';
         track.style.cssText = `
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
             width: 100%;
-            height: 6px;
-            background: #ddd;
-            border-radius: 3px;
+            height: 4px;
+            background: rgba(212, 168, 83, 0.2);
+            border-radius: 2px;
             z-index: 1;
         `;
 
-        // 活动范围
         const activeRange = document.createElement('div');
         activeRange.className = 'timeline-active';
         activeRange.style.cssText = `
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            height: 6px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 3px;
+            height: 4px;
+            background: linear-gradient(90deg, #D4A853, #F0D68A);
+            border-radius: 2px;
             z-index: 1;
         `;
 
-        // 时期标记
         const periodMarkers = document.createElement('div');
-        periodMarkers.className = 'period-markers';
         periodMarkers.style.cssText = `
             position: absolute;
-            top: 25px;
+            top: 22px;
             width: 100%;
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: #999;
+            font-size: 9px;
+            color: #c9a96e;
         `;
 
         this.periods.forEach(period => {
@@ -361,7 +635,10 @@ class MapView {
                 left: ${this.percentForYear(period.start)}%;
                 transform: translateX(-50%);
                 cursor: pointer;
+                transition: color 0.2s;
             `;
+            marker.addEventListener('mouseenter', () => marker.style.color = '#D4A853');
+            marker.addEventListener('mouseleave', () => marker.style.color = '');
             marker.addEventListener('click', () => {
                 this.timeRange.start = period.start;
                 this.timeRange.end = period.end;
@@ -371,30 +648,19 @@ class MapView {
             periodMarkers.appendChild(marker);
         });
 
-        // 更新UI函数
         const updateUI = () => {
             let min = parseInt(minSlider.value);
             let max = parseInt(maxSlider.value);
-
             if (min > max - 50) {
-                if (event.target === minSlider) {
-                    min = max - 50;
-                    minSlider.value = min;
-                } else {
-                    max = min + 50;
-                    maxSlider.value = max;
-                }
+                if (event.target === minSlider) { min = max - 50; minSlider.value = min; }
+                else { max = min + 50; maxSlider.value = max; }
             }
-
             this.timeRange.start = min;
             this.timeRange.end = max;
-
-            const minPercent = ((min + 3000) / 5024) * 100;
-            const maxPercent = ((max + 3000) / 5024) * 100;
-
-            activeRange.style.left = minPercent + '%';
-            activeRange.style.width = (maxPercent - minPercent) + '%';
-
+            const minP = ((min + 3000) / 5024) * 100;
+            const maxP = ((max + 3000) / 5024) * 100;
+            activeRange.style.left = minP + '%';
+            activeRange.style.width = (maxP - minP) + '%';
             rangeDisplay.textContent = `${this.formatYear(min)} - ${this.formatYear(max)}`;
         };
 
@@ -403,29 +669,43 @@ class MapView {
         maxSlider.addEventListener('change', () => this.applyFilters());
         minSlider.addEventListener('change', () => this.applyFilters());
 
-        // 样式
         const style = document.createElement('style');
         style.textContent = `
             .map-timeline input[type="range"]::-webkit-slider-thumb {
                 -webkit-appearance: none;
-                width: 16px;
-                height: 16px;
-                background: #667eea;
+                width: 14px; height: 14px;
+                background: #D4A853;
                 border-radius: 50%;
                 cursor: pointer;
                 pointer-events: auto;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                box-shadow: 0 0 8px rgba(212, 168, 83, 0.6);
             }
             .map-timeline input[type="range"]::-moz-range-thumb {
-                width: 16px;
-                height: 16px;
-                background: #667eea;
+                width: 14px; height: 14px;
+                background: #D4A853;
                 border-radius: 50%;
                 cursor: pointer;
                 pointer-events: auto;
                 border: none;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                box-shadow: 0 0 8px rgba(212, 168, 83, 0.6);
             }
+            .dynasty-tooltip, .landmark-tooltip {
+                background: rgba(20, 16, 10, 0.92) !important;
+                border: 1px solid rgba(212, 168, 83, 0.3) !important;
+                color: #f0d68a !important;
+                border-radius: 6px !important;
+                font-family: 'Noto Serif SC', serif !important;
+                padding: 6px 10px !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+            }
+            .leaflet-popup-content-wrapper {
+                background: rgba(20, 16, 10, 0.95) !important;
+                color: #f0d68a !important;
+                border: 1px solid rgba(212, 168, 83, 0.3) !important;
+                border-radius: 8px !important;
+                font-family: 'Noto Serif SC', serif !important;
+            }
+            .leaflet-popup-tip { background: rgba(20, 16, 10, 0.95) !important; }
         `;
 
         sliderContainer.appendChild(track);
@@ -444,108 +724,74 @@ class MapView {
         document.head.appendChild(style);
     }
 
-    /**
-     * 计算年份在时间轴上的百分比
-     */
     percentForYear(year) {
-        return ((year + 3000) / 5024) * 100;
+        return ((year - MapView.TIME_RANGE.min) / (MapView.TIME_RANGE.max - MapView.TIME_RANGE.min)) * 100;
     }
 
-    /**
-     * 格式化年份显示
-     */
     formatYear(year) {
         return year < 0 ? `公元前${Math.abs(year)}年` : `${year}年`;
     }
 
-    /**
-     * 计算年份在时间轴上的百分比
-     */
-    percentForYear(year) {
-        const totalRange = MapView.TIME_RANGE.max - MapView.TIME_RANGE.min;
-        return ((year - MapView.TIME_RANGE.min) / totalRange) * 100;
-    }
-
-    /**
-     * 根据年份获取时期
-     */
     getPeriodForYear(year) {
         return this.periods.find(p => year >= p.start && year <= p.end);
     }
 
-    /**
-     * 获取标记半径
-     */
     getMarkerRadius(node) {
         return 5 + (node.metadata?.importance || 3) * 2;
     }
 
-    /**
-     * 获取标记颜色
-     */
     getMarkerColor(node) {
         return MapView.CATEGORY_COLORS[node.category?.primary] || MapView.CATEGORY_COLORS.default;
     }
 
-    /**
-     * 获取分类名称
-     */
     getCategoryName(category) {
         return MapView.CATEGORY_NAMES[category] || category;
     }
 
-    /**
-     * 更新时间轴UI
-     */
     updateTimelineUI() {
         const { minSlider, maxSlider, activeRange, rangeDisplay } = this.timelineElements;
         minSlider.value = this.timeRange.start;
         maxSlider.value = this.timeRange.end;
-
-        const minPercent = ((this.timeRange.start + 3000) / 5024) * 100;
-        const maxPercent = ((this.timeRange.end + 3000) / 5024) * 100;
-
-        activeRange.style.left = minPercent + '%';
-        activeRange.style.width = (maxPercent - minPercent) + '%';
+        const minP = ((this.timeRange.start + 3000) / 5024) * 100;
+        const maxP = ((this.timeRange.end + 3000) / 5024) * 100;
+        activeRange.style.left = minP + '%';
+        activeRange.style.width = (maxP - minP) + '%';
         rangeDisplay.textContent = `${this.formatYear(this.timeRange.start)} - ${this.formatYear(this.timeRange.end)}`;
     }
 
-    /**
-     * 加载数据
-     */
     loadData() {
-        // 清除现有标记
         this.clearMarkers();
-
         const nodes = Array.from(this.app.dataService.nodes.values());
-
         nodes.forEach(node => {
             if (node.location.coordinates) {
                 this.addMarker(node);
             }
         });
-
         this.updateStats();
     }
 
-    /**
-     * 添加标记
-     */
     addMarker(node) {
         if (!node.location?.coordinates) return;
-        if (node.time?.year && (node.time.year < this.timeRange.start || node.time.year > this.timeRange.end)) {
-            return;
+        if (node.time?.year && (node.time.year < this.timeRange.start || node.time.year > this.timeRange.end)) return;
+        const currentZoom = this.map.getZoom();
+        if (currentZoom < 6) {
+            this.addToCluster(node);
+        } else {
+            this.createSingleMarker(node);
         }
+    }
 
+    createSingleMarker(node) {
         const [lng, lat] = node.location.coordinates;
+        const color = this.getMarkerColor(node);
 
         const marker = L.circleMarker([lat, lng], {
             radius: this.getMarkerRadius(node),
-            fillColor: this.getMarkerColor(node),
-            color: '#fff',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8,
+            fillColor: color,
+            color: '#D4A853',
+            weight: 1.5,
+            opacity: 0.8,
+            fillOpacity: 0.7,
             className: 'map-marker'
         }).addTo(this.map);
 
@@ -555,153 +801,147 @@ class MapView {
         });
 
         marker.on('click', () => this.onMarkerClick(node));
-        marker.on('mouseover', () => marker.setStyle({ fillOpacity: 1, weight: 3 }));
-        marker.on('mouseout', () => marker.setStyle({ fillOpacity: 0.8, weight: 2 }));
+        marker.on('mouseover', () => marker.setStyle({ fillOpacity: 1, weight: 2.5 }));
+        marker.on('mouseout', () => marker.setStyle({ fillOpacity: 0.7, weight: 1.5 }));
 
         marker.node = node;
+        marker.isCluster = false;
         this.markers.push(marker);
     }
 
-    /**
-     * 创建弹窗内容
-     */
+    addToCluster(node) {
+        const [lng, lat] = node.location.coordinates;
+        let cluster = this.markerClusters.find(c => {
+            const [cLng, cLat] = c.center;
+            return Math.sqrt(Math.pow(lng - cLng, 2) + Math.pow(lat - cLat, 2)) < 1;
+        });
+        if (cluster) {
+            cluster.nodes.push(node);
+            this.updateClusterMarker(cluster);
+        } else {
+            const newCluster = { center: [lng, lat], nodes: [node], marker: null };
+            this.markerClusters.push(newCluster);
+            this.updateClusterMarker(newCluster);
+        }
+    }
+
+    updateClusterMarker(cluster) {
+        if (cluster.marker) cluster.marker.remove();
+        const [lng, lat] = cluster.center;
+        const count = cluster.nodes.length;
+        const radius = Math.min(30, 10 + count * 2);
+
+        const marker = L.circleMarker([lat, lng], {
+            radius, fillColor: '#D4A853', color: '#F0D68A',
+            weight: 2, opacity: 0.8, fillOpacity: 0.5
+        }).addTo(this.map);
+
+        marker.bindPopup(this.createClusterPopupContent(cluster), { maxWidth: 400 });
+        marker.on('click', () => this.expandCluster(cluster));
+
+        cluster.marker = marker;
+    }
+
+    createClusterPopupContent(cluster) {
+        const nodes = cluster.nodes;
+        return `
+            <div class="map-popup" style="min-width: 280px; color: #f0d68a;">
+                <h3 style="margin: 0 0 10px; font-size: 15px; color: #D4A853;">该区域共 ${nodes.length} 个事件</h3>
+                <div style="max-height: 180px; overflow-y: auto;">
+                    ${nodes.slice(0, 8).map(n => `<div style="padding: 6px 0; border-bottom: 1px solid rgba(212,168,83,0.15);">
+                        <strong style="color: #D4A853;">${n.name}</strong>
+                        <span style="color: #c9a96e; font-size: 11px; margin-left: 6px;">${n.time?.displayDate || ''}</span>
+                    </div>`).join('')}
+                    ${nodes.length > 8 ? `<div style="text-align:center;color:#c9a96e;padding:6px;">...还有 ${nodes.length - 8} 个</div>` : ''}
+                </div>
+            </div>`;
+    }
+
+    expandCluster(cluster) {
+        const [lng, lat] = cluster.center;
+        this.flyTo(lat, lng, 8);
+    }
+
+    clearClusters() {
+        this.markerClusters.forEach(c => { if (c.marker) c.marker.remove(); });
+        this.markerClusters = [];
+    }
+
     createPopupContent(node) {
         const period = this.getPeriodForYear(node.time?.year);
-        const categoryName = this.getCategoryName(node.category?.primary);
-
+        const catName = this.getCategoryName(node.category?.primary);
         return `
-            <div class="map-popup" style="min-width: 280px;">
-                <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #333;">${node.name}</h3>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <span style="padding: 3px 8px; background: #667eea; color: white; border-radius: 12px; font-size: 11px;">
-                        ${node.time?.displayDate || '未知时间'}
+            <div class="map-popup" style="min-width: 260px; color: #f0d68a;">
+                <h3 style="margin: 0 0 8px; font-size: 15px; color: #D4A853;">${node.name}</h3>
+                <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+                    <span style="padding:2px 8px;background:rgba(212,168,83,0.2);color:#D4A853;border-radius:10px;font-size:11px;">
+                        ${node.time?.displayDate || '未知'}
                     </span>
-                    ${period ? `
-                        <span style="padding: 3px 8px; background: ${period.color}; color: white; border-radius: 12px; font-size: 11px;">
-                            ${period.name}
-                        </span>
-                    ` : ''}
-                    <span style="padding: 3px 8px; background: #f0f0f0; color: #666; border-radius: 12px; font-size: 11px;">
-                        ${categoryName}
-                    </span>
+                    ${period ? `<span style="padding:2px 8px;background:${period.color}30;color:${period.color};border-radius:10px;font-size:11px;">${period.name}</span>` : ''}
+                    <span style="padding:2px 8px;background:rgba(255,255,255,0.08);color:#c9a96e;border-radius:10px;font-size:11px;">${catName}</span>
                 </div>
-                <p style="margin: 0 0 10px 0; color: #666; line-height: 1.5;">${node.summary || node.description || ''}</p>
-                ${node.location?.name ? `
-                    <div style="display: flex; align-items: center; gap: 5px; color: #999; font-size: 12px;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                        ${node.location.name}
-                    </div>
-                ` : ''}
-                <button onclick="window.app?.showView('tree3d', { nodeId: '${node.id}' })"
-                        style="width: 100%; margin-top: 10px; padding: 8px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    查看详情
-                </button>
-            </div>
-        `;
+                <p style="margin:0 0 8px;color:#c9a96e;line-height:1.5;font-size:13px;">${node.summary || node.description || ''}</p>
+                ${node.location?.name ? `<div style="color:#c9a96e;font-size:11px;">📍 ${node.location.name}</div>` : ''}
+            </div>`;
     }
 
-    /**
-     * 根据年份获取时期
-     */
-    getPeriodForYear(year) {
-        return this.periods.find(p => year >= p.start && year <= p.end);
-    }
-
-    /**
-     * 标记点击事件
-     */
     onMarkerClick(node) {
         this.app.eventBus?.emit('node:select', node);
+        if (window.audioManager) window.audioManager.playClick();
     }
 
-    /**
-     * 检查节点是否通过筛选
-     */
     passesFilters(node) {
-        // 时间范围筛选
-        if (node.time?.year && (node.time.year < this.timeRange.start || node.time.year > this.timeRange.end)) {
-            return false;
-        }
-
-        // 分类筛选
-        if (this.filters.category && node.category?.primary !== this.filters.category) {
-            return false;
-        }
-
-        // 时期筛选
+        if (node.time?.year && (node.time.year < this.timeRange.start || node.time.year > this.timeRange.end)) return false;
+        if (this.filters.category && node.category?.primary !== this.filters.category) return false;
         if (this.filters.period) {
             const period = this.getPeriodForYear(node.time?.year);
-            if (!period || period.name !== this.filters.period) {
-                return false;
-            }
+            if (!period || period.name !== this.filters.period) return false;
         }
-
-        // 重要性筛选
-        if ((node.metadata?.importance || 0) < this.filters.minImportance) {
-            return false;
-        }
-
+        if ((node.metadata?.importance || 0) < this.filters.minImportance) return false;
         return true;
     }
 
-    /**
-     * 应用筛选
-     */
     applyFilters() {
         this.markers.forEach(marker => {
             const visible = this.passesFilters(marker.node);
-            if (visible) {
-                marker.addTo(this.map);
-            } else {
-                marker.remove();
-            }
+            if (visible) marker.addTo(this.map);
+            else marker.remove();
         });
         this.updateStats();
     }
 
-    /**
-     * 重置筛选
-     */
     resetFilters() {
-        this.filters = {
-            category: null,
-            period: null,
-            minImportance: 0
-        };
+        this.filters = { category: null, period: null, minImportance: 0 };
         this.timeRange = { start: -3000, end: 2024 };
-
         this.categorySelect.value = '';
         this.periodSelect.value = '';
         this.importanceRange.value = '1';
         this.updateTimelineUI();
-
         this.applyFilters();
     }
 
-    /**
-     * 清除标记
-     */
     clearMarkers() {
-        this.markers.forEach(marker => marker.remove());
+        this.markers.forEach(m => m.remove());
         this.markers = [];
+        this.clearClusters();
     }
 
-    /**
-     * 更新统计信息
-     */
     updateStats() {
-        const visibleMarkers = this.markers.filter(m => this.map.hasLayer(m));
-        this.statsDiv.textContent = `显示 ${visibleMarkers.length} / ${this.markers.length} 个标记`;
+        const visible = this.markers.filter(m => this.map.hasLayer(m)).length;
+        const total = this.markers.length + this.markerClusters.reduce((s, c) => s + c.nodes.length, 0);
+        this.statsDiv.textContent = `显示 ${visible} / 总计 ${total} 个`;
     }
 
-    /**
-     * 设置事件监听
-     */
+    reclusterMarkers() {
+        const allNodes = [];
+        this.markers.forEach(m => { if (m.node) allNodes.push(m.node); });
+        this.markerClusters.forEach(c => allNodes.push(...c.nodes));
+        this.clearMarkers();
+        allNodes.forEach(node => { if (this.passesFilters(node)) this.addMarker(node); });
+        this.updateStats();
+    }
+
     setupEventListeners() {
-        // 监听时间轴变化
         const timeHandler = ({ start, end }) => {
             if (start !== undefined) this.timeRange.start = Math.round(start);
             if (end !== undefined) this.timeRange.end = Math.round(end);
@@ -711,7 +951,6 @@ class MapView {
         this.app.eventBus.on('timeline:brush', timeHandler);
         this.eventListeners.push({ event: 'timeline:brush', handler: timeHandler });
 
-        // 监听时期选择
         const periodHandler = (period) => {
             this.filters.period = period.name;
             this.periodSelect.value = period.name;
@@ -720,7 +959,6 @@ class MapView {
         this.app.eventBus.on('period:select', periodHandler);
         this.eventListeners.push({ event: 'period:select', handler: periodHandler });
 
-        // 监听筛选变化
         const filterHandler = ({ filters }) => {
             if (filters.category) this.filters.category = filters.category;
             if (filters.period) this.filters.period = filters.period;
@@ -729,7 +967,6 @@ class MapView {
         this.app.eventBus.on('filter:results', filterHandler);
         this.eventListeners.push({ event: 'filter:results', handler: filterHandler });
 
-        // 窗口大小变化
         const resizeHandler = () => {
             if (this.container) {
                 this.container.style.height = (window.innerHeight - 180) + 'px';
@@ -740,43 +977,24 @@ class MapView {
         this.eventListeners.push({ event: 'resize', handler: resizeHandler, target: window });
     }
 
-    /**
-     * 移除事件监听
-     */
     removeEventListeners() {
         this.eventListeners.forEach(({ event, handler, target }) => {
-            if (target) {
-                target.removeEventListener(event, handler);
-            } else {
-                this.app.eventBus.off(event, handler);
-            }
+            if (target) target.removeEventListener(event, handler);
+            else this.app.eventBus.off(event, handler);
         });
         this.eventListeners = [];
     }
 
-    /**
-     * 聚焦到节点
-     */
     focusOnNode(nodeId) {
-        if (!nodeId) return;
-
         const node = this.app.dataService?.getNode(nodeId);
         if (!node?.location?.coordinates) return;
-
         const [lng, lat] = node.location.coordinates;
         this.flyTo(lat, lng, 8);
-
-        const marker = this.markers.find(m => m.node?.id === nodeId);
-        marker?.openPopup();
+        this.markers.find(m => m.node?.id === nodeId)?.openPopup();
     }
 
-    /**
-     * 定位到指定位置
-     */
     flyTo(lat, lng, zoom = 10) {
-        if (this.map) {
-            this.map.flyTo([lat, lng], zoom, { duration: MapView.CONFIG.flyToDuration });
-        }
+        if (this.map) this.map.flyTo([lat, lng], zoom, { duration: MapView.CONFIG.flyToDuration });
     }
 
     destroy() {

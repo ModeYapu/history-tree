@@ -1,34 +1,9 @@
 /**
- * 历史之树 v4.0 - 主入口文件
+ * 历史之树 v4.4 - 主入口文件
+ *
+ * 说明：本项目采用纯原生 JavaScript 开发，所有模块通过 script 标签加载后注册到全局。
+ * 核心模块包括：HistoryTreeApp, EventBus, DataService, 各视图和组件类。
  */
-
-// 引入核心模块
-// import { HistoryTreeApp } from './core/App.js';
-// import { EventBus } from './core/EventBus.js';
-// import { StateManager } from './core/StateManager.js';
-// import { Router, Routes } from './core/Router.js';
-
-// 引入数据服务
-// import { DataService } from './services/DataService.js';
-// import { HistoryNode } from './models/HistoryNode.js';
-
-// 引入视图
-// import { TreeView } from './views/TreeView.js';
-// import { TimelineView } from './views/TimelineView.js';
-// import { MapView } from './views/MapView.js';
-// import { NetworkView } from './views/NetworkView.js';
-// import { CardView } from './views/CardView.js';
-
-// 引入组件
-// import { NodeCard } from './components/NodeCard.js';
-// import { SearchBar } from './components/SearchBar.js';
-// import { FilterPanel } from './components/FilterPanel.js';
-// import { AIChat } from './components/AIChat.js';
-
-// 引入插件
-// import { ExportPlugin } from './plugins/ExportPlugin.js';
-// import { AnalyticsPlugin } from './plugins/AnalyticsPlugin.js';
-// import { EducationPlugin } from './plugins/EducationPlugin.js';
 
 /**
  * 初始化应用
@@ -83,6 +58,21 @@ async function initApp() {
 
     app.router.register('/comparison/:id1/:id2', (params) => {
         app.showView('comparison', { ids: [params.id1, params.id2] });
+    });
+
+    // 世界时间线路由
+    app.router.register('/world-timeline', () => {
+        app.showView('worldTimeline');
+    });
+
+    // 知识图谱路由
+    app.router.register('/knowledge-graph', () => {
+        app.showView('knowledgeGraph');
+    });
+
+    // 文明对比路由
+    app.router.register('/civ-compare', () => {
+        app.showView('civilizationCompare');
     });
 
     // 故事生成器路由
@@ -185,9 +175,15 @@ async function initApp() {
                     break;
                 case '8':
                     e.preventDefault();
-                    if (app.storyGenerator) {
-                        app.storyGenerator.showUI();
-                    }
+                    app.showView('worldTimeline');
+                    break;
+                case '9':
+                    e.preventDefault();
+                    app.showView('knowledgeGraph');
+                    break;
+                case '0':
+                    e.preventDefault();
+                    app.showView('civilizationCompare');
                     break;
             }
         }
@@ -287,11 +283,15 @@ function showWelcomeMessage() {
     const shortcut4 = document.createElement('div');
     shortcut4.textContent = '• Ctrl+Q: 历史问答';
 
+    const shortcut5 = document.createElement('div');
+    shortcut5.textContent = '• Ctrl+8-0: 新视图(时间轴/图谱/对比)';
+
     shortcutsDiv.appendChild(shortcutsLabel);
     shortcutsDiv.appendChild(shortcut1);
     shortcutsDiv.appendChild(shortcut2);
     shortcutsDiv.appendChild(shortcut3);
     shortcutsDiv.appendChild(shortcut4);
+    shortcutsDiv.appendChild(shortcut5);
 
     // 按钮
     const button = document.createElement('button');

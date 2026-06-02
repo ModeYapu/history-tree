@@ -28,8 +28,8 @@ class DataService {
             totalLocations: 0
         };
 
-        // 使用新的搜索引擎
-        this.searchEngine = searchEngine;
+        // 使用新的搜索引擎（如果可用）
+        this.searchEngine = typeof searchEngine !== 'undefined' ? searchEngine : null;
     }
     
     /**

@@ -1,5 +1,53 @@
 /* 动画效果 - 古典风格 */
 
+/* 节点展开动画 */
+.node-expand {
+    animation: nodeExpand 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes nodeExpand {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 节点折叠动画 */
+.node-collapse {
+    animation: nodeCollapse 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes nodeCollapse {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+/* 连接线展开动画 */
+.link-expand {
+    animation: linkExpand 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes linkExpand {
+    from {
+        stroke-dashoffset: 1000;
+        opacity: 0;
+    }
+    to {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
+}
+
 /* 树生长动画 */
 .node-grow {
     animation: nodeGrow 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;

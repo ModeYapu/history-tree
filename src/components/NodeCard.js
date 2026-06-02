@@ -9,6 +9,10 @@ class NodeCard {
         this.container = null;
         this.currentNode = null;
         this.relatedNodes = [];
+
+        // 保存事件处理器引用，用于清理
+        this._containerClickHandler = null;
+        this._escHandler = null;
     }
     
     render() {
@@ -47,14 +51,15 @@ class NodeCard {
         
         this.container.appendChild(this.card);
         document.body.appendChild(this.container);
-        
-        // 点击背景关闭
-        this.container.addEventListener('click', (e) => {
+
+        // 点击背景关闭 - 保存引用以便清理
+        this._containerClickHandler = (e) => {
             if (e.target === this.container) {
                 this.hide();
             }
-        });
-        
+        };
+        this.container.addEventListener('click', this._containerClickHandler);
+
         // ESC关闭
         this._escHandler = (e) => {
             if (e.key === 'Escape' && this.container.style.display === 'flex') {
@@ -484,6 +489,12 @@ class NodeCard {
         if (this._escHandler) {
             document.removeEventListener('keydown', this._escHandler);
             this._escHandler = null;
+        }
+
+        // 清理容器点击事件监听器
+        if (this.container && this._containerClickHandler) {
+            this.container.removeEventListener('click', this._containerClickHandler);
+            this._containerClickHandler = null;
         }
 
         // 清理容器

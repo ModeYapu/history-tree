@@ -17,20 +17,20 @@ class AIChat {
         this.container.className = 'ai-chat-panel';
         this.container.style.cssText = `
             position: fixed;
-            right: 20px;
-            bottom: 20px;
-            width: 400px;
-            height: 560px;
+            right: -420px;
+            top: 64px;
+            bottom: 0;
+            width: 380px;
             background: linear-gradient(165deg, rgba(42, 33, 24, 0.98), rgba(26, 20, 16, 0.99));
             backdrop-filter: blur(20px) saturate(1.5);
-            border-radius: 16px;
-            border: 1px solid rgba(212, 168, 83, 0.2);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 60px rgba(212, 168, 83, 0.05);
-            display: none;
+            border-left: 1px solid rgba(212, 168, 83, 0.2);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+            display: flex;
             flex-direction: column;
             z-index: 1001;
             overflow: hidden;
             font-family: 'Noto Serif SC', 'SimSun', serif;
+            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         `;
 
         // 使用安全的DOM方法创建聊天界面，避免XSS漏洞
@@ -149,7 +149,7 @@ class AIChat {
      */
     createWelcomeMessage() {
         const messageDiv = document.createElement('div');
-        messageDiv.className = 'message ai-message';
+        messageDiv.className = 'message ai-message welcome-message';
         Object.assign(messageDiv.style, {
             background: 'rgba(212, 168, 83, 0.08)',
             border: '1px solid rgba(212, 168, 83, 0.12)',
@@ -162,10 +162,12 @@ class AIChat {
         });
 
         const titleDiv = document.createElement('div');
-        titleDiv.textContent = '📜 欢迎';
+        titleDiv.textContent = '📜 历史问道';
         Object.assign(titleDiv.style, {
             color: '#F0D68A',
-            marginBottom: '8px'
+            marginBottom: '8px',
+            fontSize: '14px',
+            fontWeight: '500'
         });
 
         const textDiv = document.createElement('div');
@@ -195,6 +197,20 @@ class AIChat {
         messageDiv.appendChild(textDiv);
         messageDiv.appendChild(ul);
 
+        // 提示信息
+        const hintDiv = document.createElement('div');
+        hintDiv.textContent = '💭 点击下方分类按钮快速开始探索';
+        Object.assign(hintDiv.style, {
+            marginTop: '10px',
+            padding: '8px 12px',
+            background: 'rgba(212, 168, 83, 0.06)',
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: '#B8860B',
+            textAlign: 'center'
+        });
+        messageDiv.appendChild(hintDiv);
+
         return messageDiv;
     }
 
@@ -203,20 +219,27 @@ class AIChat {
      */
     createInputArea() {
         const inputArea = document.createElement('div');
-        inputArea.className = 'chat-input';
+        inputArea.className = 'chat-input-area';
         Object.assign(inputArea.style, {
-            padding: '14px 16px',
-            background: 'rgba(26, 20, 16, 0.5)',
-            borderTop: '1px solid rgba(212, 168, 83, 0.1)'
+            display: 'flex',
+            flexDirection: 'column',
+            background: 'rgba(26, 20, 16, 0.6)'
         });
 
-        // 输入框容器
-        const inputContainer = this.createInputContainer();
-        inputArea.appendChild(inputContainer);
-
-        // 快捷问题
+        // 快捷问题按钮区域
         const quickQuestions = this.createQuickQuestions();
         inputArea.appendChild(quickQuestions);
+
+        // 输入框容器
+        const inputContainer = document.createElement('div');
+        inputContainer.className = 'chat-input';
+        Object.assign(inputContainer.style, {
+            padding: '12px 16px',
+            borderTop: '1px solid rgba(212, 168, 83, 0.15)'
+        });
+        const inputBox = this.createInputContainer();
+        inputContainer.appendChild(inputBox);
+        inputArea.appendChild(inputContainer);
 
         return inputArea;
     }
@@ -288,114 +311,187 @@ class AIChat {
     }
 
     /**
-     * 创建快捷问题按钮
+     * 预设问题分类
+     */
+    getQuickQuestionCategories() {
+        return {
+            '🌍 文明探索': [
+                { text: '中华文明起源', query: '中华文明起源' },
+                { text: '四大发明', query: '四大发明' },
+                { text: '丝绸之路', query: '丝绸之路' },
+                { text: '古埃及文明', query: '古埃及文明' }
+            ],
+            '👤 人物查询': [
+                { text: '秦始皇', query: '秦始皇' },
+                { text: '孔子', query: '孔子' },
+                { text: '李白', query: '李白' },
+                { text: '诸葛亮', query: '诸葛亮' }
+            ],
+            '⚔️ 历史事件': [
+                { text: '秦统一六国', query: '秦统一六国' },
+                { text: '楚汉相争', query: '楚汉相争' },
+                { text: '贞观之治', query: '贞观之治' },
+                { text: '安史之乱', query: '安史之乱' }
+            ],
+            '📊 数据分析': [
+                { text: '推荐重要事件', query: '推荐重要事件' },
+                { text: '分析历史趋势', query: '分析历史趋势' },
+                { text: '朝代时间线', query: '朝代时间线' },
+                { text: '帮助', query: '帮助' }
+            ]
+        };
+    }
+
+    /**
+     * 创建快捷问题按钮区域（增强版）
      */
     createQuickQuestions() {
         const quickQuestions = document.createElement('div');
         quickQuestions.className = 'quick-questions';
         Object.assign(quickQuestions.style, {
-            marginTop: '10px',
+            padding: '14px 16px',
+            background: 'rgba(26, 20, 16, 0.4)',
+            borderTop: '1px solid rgba(212, 168, 83, 0.1)',
+            overflowY: 'auto',
+            maxHeight: '200px'
+        });
+
+        // 分类标题
+        const titleDiv = document.createElement('div');
+        titleDiv.textContent = '✨ 快速探索';
+        Object.assign(titleDiv.style, {
+            fontSize: '12px',
+            color: '#8B7355',
+            marginBottom: '10px',
+            fontWeight: '500'
+        });
+        quickQuestions.appendChild(titleDiv);
+
+        // 创建分类标签切换
+        const tabsContainer = document.createElement('div');
+        Object.assign(tabsContainer.style, {
             display: 'flex',
             gap: '6px',
+            marginBottom: '10px',
             flexWrap: 'wrap'
         });
 
-        const questions = [
-            { text: '秦统一六国', query: '秦统一六国' },
-            { text: '推荐重要事件', query: '推荐重要事件' },
-            { text: '分析历史趋势', query: '分析历史趋势' },
-            { text: '丝绸之路', query: '丝绸之路' }
-        ];
+        const categories = this.getQuickQuestionCategories();
+        const categoryNames = Object.keys(categories);
+        let activeCategory = categoryNames[0];
 
-        questions.forEach(q => {
-            const btn = document.createElement('button');
-            btn.className = 'quick-q';
-            btn.textContent = q.text;
-            btn.setAttribute('data-q', q.query);
-            Object.assign(btn.style, {
-                background: 'rgba(212, 168, 83, 0.08)',
-                border: '1px solid rgba(212, 168, 83, 0.12)',
-                color: '#C9A96E',
-                padding: '5px 12px',
-                borderRadius: '14px',
-                fontSize: '12px',
+        // 创建分类标签
+        const tabButtons = [];
+        categoryNames.forEach((catName, index) => {
+            const tabBtn = document.createElement('button');
+            tabBtn.className = 'category-tab';
+            tabBtn.textContent = catName;
+            Object.assign(tabBtn.style, {
+                background: index === 0 ? 'rgba(212, 168, 83, 0.2)' : 'rgba(212, 168, 83, 0.05)',
+                border: index === 0 ? '1px solid rgba(212, 168, 83, 0.3)' : '1px solid rgba(212, 168, 83, 0.1)',
+                color: index === 0 ? '#F0D68A' : '#8B7355',
+                padding: '5px 10px',
+                borderRadius: '12px',
+                fontSize: '11px',
                 fontFamily: "'Noto Serif SC', serif",
                 cursor: 'pointer',
                 transition: 'all 0.2s'
             });
 
-            btn.addEventListener('mouseover', () => {
-                btn.style.borderColor = 'rgba(212, 168, 83, 0.3)';
-            });
-            btn.addEventListener('mouseout', () => {
-                btn.style.borderColor = 'rgba(212, 168, 83, 0.12)';
+            tabBtn.addEventListener('click', () => {
+                // 切换激活状态
+                tabButtons.forEach(btn => {
+                    btn.style.background = 'rgba(212, 168, 83, 0.05)';
+                    btn.style.border = '1px solid rgba(212, 168, 83, 0.1)';
+                    btn.style.color = '#8B7355';
+                });
+                tabBtn.style.background = 'rgba(212, 168, 83, 0.2)';
+                tabBtn.style.border = '1px solid rgba(212, 168, 83, 0.3)';
+                tabBtn.style.color = '#F0D68A';
+
+                // 切换问题显示
+                activeCategory = catName;
+                this.updateQuestionButtons(questionsContainer, categories[catName]);
             });
 
-            quickQuestions.appendChild(btn);
+            tabButtons.push(tabBtn);
+            tabsContainer.appendChild(tabBtn);
         });
+
+        quickQuestions.appendChild(tabsContainer);
+
+        // 创建问题按钮容器
+        const questionsContainer = document.createElement('div');
+        questionsContainer.className = 'questions-container';
+        Object.assign(questionsContainer.style, {
+            display: 'flex',
+            gap: '6px',
+            flexWrap: 'wrap'
+        });
+
+        // 初始化第一个分类的问题
+        this.updateQuestionButtons(questionsContainer, categories[activeCategory]);
+        quickQuestions.appendChild(questionsContainer);
 
         return quickQuestions;
     }
 
     /**
-     * 绑定事件监听器
+     * 更新问题按钮显示
      */
-    bindEvents() {
-        
-        // 绑定事件
-        this.container.querySelector('.close-btn').addEventListener('click', () => this.toggle());
-        this.container.querySelector('.send-btn').addEventListener('click', () => this.sendMessage());
-        this.container.querySelector('.message-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.sendMessage();
-        });
-        
-        // 快捷问题
-        this.container.querySelectorAll('.quick-q').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const q = btn.getAttribute('data-q') || btn.textContent;
-                this.container.querySelector('.message-input').value = q;
-                this.sendMessage();
+    updateQuestionButtons(container, questions) {
+        // 清空现有按钮
+        container.innerHTML = '';
+
+        questions.forEach(q => {
+            const btn = document.createElement('button');
+            btn.className = 'quick-q-btn';
+            btn.textContent = q.text;
+            btn.setAttribute('data-q', q.query);
+            Object.assign(btn.style, {
+                background: 'rgba(212, 168, 83, 0.06)',
+                border: '1px solid rgba(212, 168, 83, 0.15)',
+                color: '#C9A96E',
+                padding: '6px 12px',
+                borderRadius: '16px',
+                fontSize: '12px',
+                fontFamily: "'Noto Serif SC', serif",
+                cursor: 'pointer',
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                whiteSpace: 'nowrap'
             });
+
+            // 悬停效果
+            btn.addEventListener('mouseenter', () => {
+                btn.style.background = 'rgba(212, 168, 83, 0.15)';
+                btn.style.borderColor = 'rgba(212, 168, 83, 0.35)';
+                btn.style.transform = 'translateY(-1px)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.background = 'rgba(212, 168, 83, 0.06)';
+                btn.style.borderColor = 'rgba(212, 168, 83, 0.15)';
+                btn.style.transform = 'translateY(0)';
+            });
+
+            // 点击发送问题
+            btn.addEventListener('click', () => {
+                const inputField = this.container.querySelector('.message-input');
+                if (inputField) {
+                    inputField.value = q.query;
+                    this.sendMessage();
+
+                    // 按钮点击动画
+                    btn.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        btn.style.transform = '';
+                    }, 150);
+                }
+            });
+
+            container.appendChild(btn);
         });
-        
-        // 切换按钮
-        this.toggleButton = document.createElement('button');
-        this.toggleButton.className = 'ai-toggle-btn';
-        this.toggleButton.textContent = '📜';
-        this.toggleButton.title = '历史问道';
-        this.toggleButton.style.cssText = `
-            position: fixed;
-            right: 24px;
-            bottom: 24px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, rgba(212, 168, 83, 0.2), rgba(184, 134, 11, 0.15));
-            backdrop-filter: blur(10px);
-            color: #F0D68A;
-            border: 1px solid rgba(212, 168, 83, 0.3);
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(212, 168, 83, 0.15);
-            z-index: 1000;
-            transition: all 0.3s;
-        `;
-        this.toggleButton.addEventListener('mouseover', () => {
-            this.toggleButton.style.transform = 'scale(1.1)';
-            this.toggleButton.style.boxShadow = '0 6px 30px rgba(212, 168, 83, 0.25)';
-        });
-        this.toggleButton.addEventListener('mouseout', () => {
-            this.toggleButton.style.transform = 'scale(1)';
-            this.toggleButton.style.boxShadow = '0 4px 20px rgba(212, 168, 83, 0.15)';
-        });
-        this.toggleButton.addEventListener('click', () => this.toggle());
-        document.body.appendChild(this.toggleButton);
-        
-        document.body.appendChild(this.container);
-        
-        return this.container;
     }
-    
+
     /**
      * 绑定事件监听器
      */
@@ -447,16 +543,16 @@ class AIChat {
         this.toggleButton.title = '历史问道';
         Object.assign(this.toggleButton.style, {
             position: 'fixed',
-            right: '24px',
-            bottom: '24px',
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
+            right: '20px',
+            top: '80px',
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
             background: 'linear-gradient(145deg, rgba(212, 168, 83, 0.2), rgba(184, 134, 11, 0.15))',
             backdropFilter: 'blur(10px)',
             color: '#F0D68A',
             border: '1px solid rgba(212, 168, 83, 0.3)',
-            fontSize: '24px',
+            fontSize: '20px',
             cursor: 'pointer',
             boxShadow: '0 4px 20px rgba(212, 168, 83, 0.15)',
             zIndex: '1000',
@@ -480,8 +576,7 @@ class AIChat {
         this.isOpen = !this.isOpen;
 
         if (this.isOpen) {
-            this.container.style.display = 'flex';
-            this.container.style.animation = 'chatSlideIn 0.3s ease-out';
+            this.container.style.right = '0';
             this.toggleButton.style.display = 'none';
             // 聚焦输入框
             setTimeout(() => {
@@ -489,7 +584,7 @@ class AIChat {
                 if (input) input.focus();
             }, 300);
         } else {
-            this.container.style.display = 'none';
+            this.container.style.right = '-420px';
             this.toggleButton.style.display = 'block';
         }
     }

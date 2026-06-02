@@ -101,6 +101,19 @@
     stroke-opacity: 0.5;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 0;
+}
+
+.link.link-expand {
+    stroke-dashoffset: 1000;
+    animation: drawLink 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes drawLink {
+    to {
+        stroke-dashoffset: 0;
+    }
 }
 
 .link:hover {
@@ -128,12 +141,30 @@
     stroke-opacity: 0.4;
 }
 
-/* 高亮节点 */
+/* 高亮节点 - 搜索结果 */
 .node.highlighted circle {
-    fill: rgba(212, 168, 83, 0.5) !important;
-    stroke: var(--gold-light, #F0D68A) !important;
+    fill: rgba(255, 215, 0, 0.4) !important;
+    stroke: #FFD700 !important;
     stroke-width: 4px !important;
-    filter: drop-shadow(0 0 12px rgba(212, 168, 83, 0.6));
+    filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.8));
+    animation: highlightPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes highlightPulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
+        transform: scale(1);
+    }
+    50% {
+        filter: drop-shadow(0 0 24px rgba(255, 215, 0, 1));
+        transform: scale(1.1);
+    }
+}
+
+.node.highlighted text {
+    fill: #FFD700 !important;
+    font-weight: 700;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
 }
 
 /* 选中节点 */
@@ -189,23 +220,33 @@
     opacity: 1;
 }
 
-/* 分支颜色编码 */
-.node.politics circle { stroke: var(--red-accent, #C0392B); }
-.node.politics circle { fill: rgba(192, 57, 43, 0.2); }
-.node.technology circle { stroke: var(--blue-accent, #4A90B8); }
-.node.technology circle { fill: rgba(74, 144, 184, 0.2); }
-.node.culture circle { stroke: var(--purple-accent, #8E6BA8); }
-.node.culture circle { fill: rgba(142, 107, 168, 0.2); }
-.node.economy circle { stroke: var(--green-accent, #5A8F5A); }
-.node.economy circle { fill: rgba(90, 143, 90, 0.2); }
-.node.military circle { stroke: var(--orange-accent, #C97B2A); }
-.node.military circle { fill: rgba(201, 123, 42, 0.2); }
+/* 分支颜色编码 - 政治红/科技青/文化紫/经济绿/军事橙 */
+.node.politics circle {
+    stroke: #ff6b6b;
+    fill: rgba(255, 107, 107, 0.2);
+}
+.node.technology circle {
+    stroke: #4ecdc4;
+    fill: rgba(78, 205, 196, 0.2);
+}
+.node.culture circle {
+    stroke: #a855f7;
+    fill: rgba(168, 85, 247, 0.2);
+}
+.node.economy circle {
+    stroke: #22c55e;
+    fill: rgba(34, 197, 94, 0.2);
+}
+.node.military circle {
+    stroke: #f97316;
+    fill: rgba(249, 115, 22, 0.2);
+}
 
-.node.politics text { fill: #E57373; }
-.node.technology text { fill: #64B5F6; }
-.node.culture text { fill: #BA68C8; }
-.node.economy text { fill: #81C784; }
-.node.military text { fill: #FFB74D; }
+.node.politics text { fill: #ff6b6b; }
+.node.technology text { fill: #4ecdc4; }
+.node.culture text { fill: #a855f7; }
+.node.economy text { fill: #22c55e; }
+.node.military text { fill: #f97316; }
 
 /* 重要程度标识 */
 .importance-1 circle { stroke-width: 1.5px; }

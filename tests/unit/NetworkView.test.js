@@ -111,7 +111,18 @@ describe('NetworkView', () => {
       })),
       call: jest.fn(() => createMockSelection()),
       on: jest.fn(() => createMockSelection()),
-      remove: jest.fn()
+      remove: jest.fn(),
+      filter: jest.fn(() => createMockSelection()),
+      join: jest.fn(() => createMockSelection()),
+      data: jest.fn(() => ({
+        join: jest.fn(() => createMockSelection()),
+        enter: jest.fn(() => ({
+          append: jest.fn(() => createMockSelection())
+        })),
+        exit: jest.fn(() => ({
+          remove: jest.fn()
+        }))
+      }))
     });
 
     global.d3 = {
@@ -127,7 +138,9 @@ describe('NetworkView', () => {
       })),
       forceCenter: jest.fn(() => mockForceFn),
       forceCollide: jest.fn(() => ({
-        radius: jest.fn(() => mockForceFn)
+        radius: jest.fn(() => ({
+          iterations: jest.fn(() => mockForceFn)
+        }))
       })),
       zoom: jest.fn(() => ({
         scaleExtent: jest.fn(() => ({
@@ -247,11 +260,11 @@ describe('NetworkView', () => {
     });
 
     test('未知分类返回默认颜色', () => {
-      expect(networkView.getNodeColor({ category: 'unknown' })).toBe('#999');
+      expect(networkView.getNodeColor({ category: 'unknown' })).toBe('#D4A853');
     });
 
     test('无分类返回默认颜色', () => {
-      expect(networkView.getNodeColor({})).toBe('#999');
+      expect(networkView.getNodeColor({})).toBe('#D4A853');
     });
   });
 

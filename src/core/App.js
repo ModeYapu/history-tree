@@ -69,7 +69,10 @@ class HistoryTreeApp {
             
             // 3. 加载数据
             await this.loadData();
-            
+
+            // 更新节点数显示
+            this.updateNodeCount();
+
             // 3. 初始化视图
             this.initViews();
             
@@ -82,10 +85,15 @@ class HistoryTreeApp {
             // 6. 启动路由
             this.router.start();
             
-            // 7. 显示主视图
-            this.showView('tree3d');
-            
-            console.log('✅ 初始化完成');
+            // 7. 初始化完成（视图显示由外部 index.html 控制）
+            // 初始化音效管理器
+        if (typeof AudioManager !== 'undefined') {
+            window.audioManager = new AudioManager();
+            window.audioManager.init();
+            console.log('✅ 音效管理器初始化完成');
+        }
+
+        console.log('✅ 初始化完成');
             this.eventBus.emit('app:ready');
             
         } catch (error) {
@@ -126,6 +134,11 @@ class HistoryTreeApp {
         this.registerView('network', new NetworkView(this));
         this.registerView('cards', new CardView(this));
 
+        // 知识星球
+        if (typeof KnowledgePlanet !== 'undefined') {
+            this.registerView('knowledgePlanet', new KnowledgePlanet(this));
+        }
+
         // 对比视图
         if (typeof ComparisonView !== 'undefined') {
             this.registerView('comparison', new ComparisonView(this));
@@ -143,11 +156,20 @@ class HistoryTreeApp {
         // 全局组件
         this.registerComponent('searchBar', new SearchBar(this));
         this.registerComponent('filterPanel', new FilterPanel(this));
+        this.registerComponent('eventModal', new EventModal(this));
         this.registerComponent('aiChat', new AIChat(this));
         this.registerComponent('nodeCard', new NodeCard(this));
 
         // 渲染全局组件
         this.renderGlobalComponents();
+
+        // 连接节点选择到事件详情弹窗
+        this.eventBus.on('node:select', (node) => {
+            const eventModal = this.getComponent('eventModal');
+            if (eventModal && node) {
+                eventModal.show(node);
+            }
+        });
         
         console.log('✅ 组件初始化完成');
     }
@@ -328,17 +350,29 @@ class HistoryTreeApp {
     destroy() {
         // 销毁视图
         this.views.forEach(view => view.destroy());
-        
+
         // 销毁组件
         this.components.forEach(component => component.destroy());
-        
+
         // 销毁插件
         this.plugins.forEach(plugin => plugin.destroy());
-        
+
         // 清理事件
         this.eventBus.clear();
-        
+
         console.log('👋 应用已销毁');
+    }
+
+    /**
+     * 更新节点数显示
+     */
+    updateNodeCount() {
+        const count = this.dataService.stats.totalNodes;
+        const nodeCountElement = document.querySelector('.stat-number');
+        if (nodeCountElement) {
+            nodeCountElement.textContent = count;
+        }
+        console.log(`📊 更新节点数显示: ${count}`);
     }
 }
 

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/tree.css" />
     <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/world-views.css" />
 
     <!-- D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -20,6 +21,9 @@
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Fuse.js for fuzzy search -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&display=swap');
@@ -140,6 +144,7 @@
             display: flex;
             gap: 8px;
             margin-left: 28px;
+            flex-wrap: wrap;
         }
 
         .nav-btn {
@@ -155,6 +160,10 @@
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
+            min-width: 90px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .nav-btn::before {
@@ -315,7 +324,21 @@
 <body>
     <!-- 加载屏幕 -->
     <div class="loading-screen" id="loadingScreen">
-        <div class="loading-tree">🌳</div>
+        <div class="loading-tree">
+            <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <!-- 树干 -->
+                <path d="M60 120 L60 70" stroke="#5C3A1E" stroke-width="8" stroke-linecap="round"/>
+                <path d="M60 100 Q50 90 40 85" stroke="#5C3A1E" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <path d="M60 95 Q70 85 80 80" stroke="#5C3A1E" stroke-width="4" stroke-linecap="round" fill="none"/>
+                <!-- 树冠 - 三层树叶 -->
+                <ellipse cx="60" cy="55" rx="35" ry="30" fill="#2D5A27"/>
+                <ellipse cx="45" cy="65" rx="25" ry="20" fill="#3D7A37"/>
+                <ellipse cx="75" cy="65" rx="25" ry="20" fill="#3D7A37"/>
+                <ellipse cx="60" cy="40" rx="28" ry="25" fill="#4A8A3E"/>
+                <!-- 高光 -->
+                <ellipse cx="50" cy="35" rx="8" ry="6" fill="#5A9A4E" opacity="0.6"/>
+            </svg>
+        </div>
         <div class="loading-text">历史之树正在生长...</div>
         <div class="loading-progress">
             <div class="loading-bar"></div>
@@ -332,15 +355,25 @@
             </div>
             
             <div class="nav-buttons">
-                <button class="nav-btn active" data-view="tree3d">🌲 3D树</button>
+                <button class="nav-btn active" data-view="tree">🌲 树形</button>
+                <button class="nav-btn" data-view="tree3d">🌳 3D树</button>
                 <button class="nav-btn" data-view="timeline">⏱️ 时间轴</button>
                 <button class="nav-btn" data-view="network">🕸️ 网络</button>
                 <button class="nav-btn" data-view="map">🗺️ 地图</button>
                 <button class="nav-btn" data-view="cards">🎴 卡片</button>
+                <button class="nav-btn" data-view="knowledgePlanet">✦ 知识星球</button>
+                <button class="nav-btn" data-view="worldTimeline">🌍 世界时间线</button>
+                <button class="nav-btn" data-view="knowledgeGraph">🔗 知识图谱</button>
+                <button class="nav-btn" data-view="civilizationCompare">⚖️ 文明对比</button>
                 <button class="nav-btn" id="modelSelectorBtn">🤖 AI模型</button>
+                <button class="nav-btn" id="themeToggleBtn">🌙 主题</button>
             </div>
             
             <div class="status-bar">
+                <div class="status-item" id="offlineStatus" style="display: none;">
+                    <span>🔴</span>
+                    <span>离线模式</span>
+                </div>
                 <div class="status-item">
                     <span>📊</span>
                     <span id="nodeCount">0</span> 节点
@@ -369,6 +402,7 @@
     <!-- 数据层 -->
     <script src="src/models/HistoryNode.js"></script>
     <script src="src/services/SearchEngine.js"></script>
+    <script src="src/services/FuzzySearchEngine.js"></script>
     <script src="src/services/DataService.js"></script>
     <script src="src/services/AIConnectionEngine.js"></script>
     <script src="src/services/EnhancedAIEngine.js"></script>
@@ -382,14 +416,27 @@
     <script src="src/views/CardView.js"></script>
     <script src="src/views/HistoryTree3D.js"></script>
     <script src="src/views/EnhancedNetworkView.js"></script>
+    <script src="src/views/KnowledgePlanet.js"></script>
+    <script src="src/views/CivilizationCompare.js"></script>
+    <script src="src/views/WorldTimeline.js"></script>
+    <script src="src/views/KnowledgeGraph.js"></script>
+
+    <!-- 服务层 -->
+    <script src="src/services/AudioManager.js"></script>
+    <script src="src/services/WorldDataService.js"></script>
     
     <!-- 组件层 -->
     <script src="src/components/NodeCard.js"></script>
     <script src="src/components/SearchBar.js"></script>
     <script src="src/components/FilterPanel.js"></script>
+    <script src="src/components/EventModal.js"></script>
     <script src="src/components/AIChat.js"></script>
     <script src="src/components/PhilosophyUI.js"></script>
     <script src="src/components/ModelSelector.js"></script>
+    <script src="src/components/ShortcutHelp.js"></script>
+    <script src="src/components/SmartSearchSuggestions.js"></script>
+    <script src="src/components/TimelineEventDetail.js"></script>
+    <script src="src/components/KnowledgeCard.js"></script>
     
     <!-- 插件 -->
     <script src="src/plugins/ExportPlugin.js"></script>
@@ -399,10 +446,16 @@
     
     <!-- 工具 -->
     <script src="src/utils/PerformanceOptimizer.js"></script>
+    <script src="src/utils/VirtualScroll.js"></script>
+    <script src="src/utils/ThemeManager.js"></script>
     
     <!-- 数据 -->
     <script src="data/historical-dataset.js"></script>
-    
+    <script src="data/chinese-dynasties.js"></script>
+    <script src="data/world-civilizations.js"></script>
+    <script src="data/world-events.js"></script>
+    <script src="data/quiz-questions.js"></script>
+
     <!-- 主入口 -->
     <script src="src/main.js"></script>
     
@@ -423,10 +476,31 @@
                 // 暴露到全局（调试用）
                 window.app = app;
                 
-                // 等待应用初始化完成
+                // 等待应用初始化完成（轮询方式，避免事件竞态）
                 await new Promise((resolve) => {
-                    app.eventBus.on('app:ready', resolve);
+                    const check = () => {
+                        if (app.dataService && app.dataService.stats.totalNodes > 0) {
+                            resolve();
+                        } else {
+                            setTimeout(check, 100);
+                        }
+                    };
+                    check();
                 });
+
+                // 延迟显示树形视图，确保所有组件初始化完成
+                await new Promise(r => setTimeout(r, 500));
+                app.showView('tree');
+
+                // 更新节点数量显示
+                const nodeCountEl = document.getElementById('nodeCount');
+                if (nodeCountEl && app.dataService) {
+                    nodeCountEl.textContent = app.dataService.stats.totalNodes || 0;
+                }
+                
+                // 隐藏加载动画
+                const loadingTree = document.querySelector('.loading-tree');
+                if (loadingTree) loadingTree.style.display = 'none';
                 
                 // 加载数据集（已由 DataService.loadCoreData 处理）
                 // await loadHistoricalData();
@@ -436,9 +510,17 @@
                 
                 // 初始化性能监控
                 initPerformanceMonitor();
+
+                // 初始化在线状态监控
+                initOnlineStatusMonitor();
                 
                 // 隐藏加载屏幕
                 hideLoadingScreen();
+
+                // 确保加载屏幕在最多5秒后一定会隐藏（防止初始化失败导致一直显示）
+                setTimeout(() => {
+                    hideLoadingScreen();
+                }, 5000);
                 
                 // 显示欢迎信息
                 showWelcome();
@@ -447,6 +529,7 @@
                 
             } catch (error) {
                 console.error('❌ 应用初始化失败:', error);
+                hideLoadingScreen(); // 确保错误时也隐藏加载屏幕
                 showError(error);
             }
         }
@@ -514,6 +597,27 @@
                     console.warn('模型选择器未初始化');
                 }
             });
+
+            // 主题切换按钮
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            if (themeToggleBtn && window.themeManager) {
+                const updateThemeButton = () => {
+                    const themeInfo = themeManager.getThemeInfo();
+                    themeToggleBtn.textContent = `${themeInfo.icon} ${themeInfo.name}`;
+                };
+                updateThemeButton();
+
+                themeToggleBtn.addEventListener('click', () => {
+                    themeManager.toggle();
+                    updateThemeButton();
+                });
+
+                // 监听主题变化
+                themeManager.addListener((themeName) => {
+                    updateThemeButton();
+                    console.log(`🎨 主题已切换到: ${themeName}`);
+                });
+            }
             
             // 初始化组件
             app.getComponent('searchBar');
@@ -521,7 +625,23 @@
             app.getComponent('aiChat');
             app.getComponent('nodeCard');
             app.getComponent('philosophyUI');
-            
+
+            // 初始化快捷键帮助
+            if (typeof ShortcutHelp !== 'undefined') {
+                const shortcutHelp = new ShortcutHelp();
+                shortcutHelp.init();
+                app.shortcutHelp = shortcutHelp;
+                console.log('✅ 快捷键帮助初始化完成');
+            }
+
+            // 初始化知识卡片
+            if (typeof KnowledgeCard !== 'undefined') {
+                const knowledgeCard = new KnowledgeCard(app);
+                knowledgeCard.init();
+                app.knowledgeCard = knowledgeCard;
+                console.log('✅ 知识卡片初始化完成');
+            }
+
             // 初始化模型选择器
             if (typeof ModelSelector !== 'undefined' && app.modelManager) {
                 app.modelSelector = new ModelSelector(app);
@@ -529,8 +649,8 @@
                 console.log('✅ 模型选择器初始化完成');
             }
             
-            // 显示默认视图
-            app.showView('tree3d');
+            // 显示默认视图（已在初始化时通过 showView 调用，此处不再重复）
+            // app.showView('tree');
         }
         
         // 切换视图
@@ -551,16 +671,116 @@
                 document.getElementById('memoryUsage').textContent = report.metrics.memory.toFixed(0);
             }, 1000);
         }
+
+        // 初始化在线状态监控
+        function initOnlineStatusMonitor() {
+            const offlineStatus = document.getElementById('offlineStatus');
+
+            function updateOnlineStatus() {
+                if (navigator.onLine) {
+                    offlineStatus.style.display = 'none';
+                } else {
+                    offlineStatus.style.display = 'flex';
+                }
+            }
+
+            // 初始检查
+            updateOnlineStatus();
+
+            // 监听在线/离线事件
+            window.addEventListener('online', () => {
+                updateOnlineStatus();
+                console.log('✅ 网络已连接');
+            });
+
+            window.addEventListener('offline', () => {
+                updateOnlineStatus();
+                console.log('🔴 网络已断开，进入离线模式');
+            });
+        }
+
+        /** 初始化背景微粒子漂浮效果 */
+        function initBgParticles() {
+            const canvas = document.createElement('canvas');
+            canvas.id = 'bg-particles';
+            document.body.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            const particles = [];
+            for (let i = 0; i < 40; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.2,
+                    vy: (Math.random() - 0.5) * 0.15,
+                    r: 0.5 + Math.random() * 1.5,
+                    alpha: 0.05 + Math.random() * 0.15,
+                    color: Math.random() > 0.6 ? '#D4A853' : '#8b7355'
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        /** 初始化音效切换按钮 */
+        function initAudioToggle() {
+            if (!window.audioManager) return;
+            const btn = document.createElement('button');
+            btn.className = 'audio-toggle';
+            btn.textContent = '🔊';
+            btn.title = '切换音效';
+            btn.addEventListener('click', () => {
+                const muted = window.audioManager.toggleMute();
+                btn.textContent = muted ? '🔇' : '🔊';
+                btn.classList.toggle('muted', muted);
+            });
+            document.body.appendChild(btn);
+        }
         
         // 隐藏加载屏幕
         function hideLoadingScreen() {
             const loadingScreen = document.getElementById('loadingScreen');
-            loadingScreen.style.opacity = '0';
-            loadingScreen.style.transition = 'opacity 0.5s';
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.transition = 'opacity 0.8s ease';
+
+                setTimeout(() => {
+                    if (loadingScreen.parentNode) {
+                        loadingScreen.remove();
+                    }
+                }, 800);
+            }
             
-            setTimeout(() => {
-                loadingScreen.remove();
-            }, 500);
+            // 初始化背景微粒子
+            initBgParticles();
+
+            // 初始化音效切换按钮
+            initAudioToggle();
         }
         
         // 显示欢迎信息
@@ -568,8 +788,8 @@
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
-                top: 84px;
-                right: 24px;
+                top: 80px;
+                left: 24px;
                 background: linear-gradient(145deg, rgba(42, 33, 24, 0.98), rgba(26, 20, 16, 0.99));
                 backdrop-filter: blur(20px);
                 padding: 26px;
@@ -604,7 +824,7 @@
                 </div>
 
                 <div style="font-size: 12px; color: #C9A96E; margin-bottom: 18px; border-top: 1px solid rgba(212, 168, 83, 0.15); padding-top: 14px;">
-                    快捷键：Ctrl+1-5 切换视图 | Ctrl+K 搜索 | Ctrl+E 导出
+                    快捷键：Ctrl+1-6 切换视图 | Ctrl+K 搜索 | Ctrl+E 导出
                 </div>
 
                 <button onclick="this.parentElement.remove()" style="
@@ -625,14 +845,14 @@
             
             document.body.appendChild(notification);
             
-            // 5秒后自动关闭
+            // 3秒后自动关闭
             setTimeout(() => {
                 if (notification.parentElement) {
                     notification.style.opacity = '0';
                     notification.style.transition = 'opacity 0.5s';
                     setTimeout(() => notification.remove(), 500);
                 }
-            }, 10000);
+            }, 3000);
         }
         
         // 显示错误
@@ -697,6 +917,49 @@
                 from { transform: translateY(40px) scale(0.95); opacity: 0; }
                 to { transform: translateY(0) scale(1); opacity: 1; }
             }
+
+            /* AI聊天侧边栏样式 */
+            .ai-chat-panel {
+                position: fixed !important;
+                right: -420px !important;
+                top: 64px !important;
+                bottom: 0 !important;
+                width: 380px !important;
+                background: linear-gradient(165deg, rgba(42, 33, 24, 0.98), rgba(26, 20, 16, 0.99)) !important;
+                backdrop-filter: blur(20px) saturate(1.5) !important;
+                border-left: 1px solid rgba(212, 168, 83, 0.2) !important;
+                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                z-index: 1001 !important;
+                overflow: hidden !important;
+                font-family: 'Noto Serif SC', 'SimSun', serif !important;
+                transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            }
+
+            .ai-chat-panel.open {
+                right: 0 !important;
+            }
+
+            /* AI聊天切换按钮 */
+            .ai-toggle-btn {
+                position: fixed !important;
+                right: 20px !important;
+                top: 80px !important;
+                width: 48px !important;
+                height: 48px !important;
+                border-radius: 12px !important;
+                background: linear-gradient(145deg, rgba(212, 168, 83, 0.2), rgba(184, 134, 11, 0.15)) !important;
+                backdrop-filter: blur(10px) !important;
+                color: #F0D68A !important;
+                border: 1px solid rgba(212, 168, 83, 0.3) !important;
+                font-size: 20px !important;
+                cursor: pointer !important;
+                box-shadow: 0 4px 20px rgba(212, 168, 83, 0.15) !important;
+                z-index: 1000 !important;
+                transition: all 0.3s !important;
+            }
+
             /* 节点卡片滚动条 */
             .node-card::-webkit-scrollbar { width: 6px; }
             .node-card::-webkit-scrollbar-track { background: transparent; }
@@ -719,10 +982,10 @@
         
         // 快捷键支持
         document.addEventListener('keydown', (e) => {
-            // Ctrl+1-5 切换视图
-            if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
+            // Ctrl+1-6 切换视图
+            if (e.ctrlKey && e.key >= '1' && e.key <= '6') {
                 e.preventDefault();
-                const views = ['tree3d', 'timeline', 'network', 'map', 'cards'];
+                const views = ['tree', 'tree3d', 'timeline', 'network', 'map', 'cards'];
                 const idx = parseInt(e.key) - 1;
                 if (views[idx]) {
                     switchView(views[idx]);

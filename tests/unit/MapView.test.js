@@ -68,6 +68,7 @@ describe('MapView', () => {
       const marker = {
         addTo: jest.fn(),
         bindPopup: jest.fn(),
+        bindTooltip: jest.fn(),
         on: jest.fn(),
         setStyle: jest.fn(),
         remove: jest.fn(),
@@ -75,6 +76,7 @@ describe('MapView', () => {
       };
       marker.addTo.mockReturnValue(marker); // chainable
       marker.bindPopup.mockReturnValue(marker); // chainable
+      marker.bindTooltip.mockReturnValue(marker); // chainable
       return marker;
     };
 
@@ -97,10 +99,40 @@ describe('MapView', () => {
         addTo: jest.fn(function() { return this; })
       })),
       circleMarker: jest.fn(() => createMarkerMock()),
+      divIcon: jest.fn(() => ({ options: {} })),
+      icon: jest.fn(() => ({ options: {} })),
+      marker: jest.fn(() => createMarkerMock()),
+      layerGroup: jest.fn(() => ({
+        addTo: jest.fn(),
+        addLayer: jest.fn(),
+        removeLayer: jest.fn(),
+        clearLayers: jest.fn(),
+        eachLayer: jest.fn()
+      })),
+      popup: jest.fn(() => ({
+        setLatLng: jest.fn(),
+        setContent: jest.fn(),
+        openOn: jest.fn(),
+        addTo: jest.fn()
+      })),
       control: {
         zoom: jest.fn(() => ({ addTo: jest.fn() })),
         scale: jest.fn(() => ({ addTo: jest.fn() }))
-      }
+      },
+      polygon: jest.fn(() => ({
+        addTo: jest.fn(function() { return this; }),
+        bindTooltip: jest.fn(function() { return this; }),
+        remove: jest.fn()
+      })),
+      polyline: jest.fn(() => ({
+        addTo: jest.fn(function() { return this; }),
+        bindTooltip: jest.fn(function() { return this; }),
+        remove: jest.fn()
+      })),
+      rectangle: jest.fn(() => ({
+        addTo: jest.fn(function() { return this; }),
+        setBounds: jest.fn(function() { return this; })
+      }))
     };
 
     mapView = new MapView(mockApp);
@@ -250,7 +282,7 @@ describe('MapView', () => {
     });
 
     test('应该返回默认颜色对于未知分类', () => {
-      expect(mapView.getMarkerColor({ category: { primary: 'unknown' } })).toBe('#999');
+      expect(mapView.getMarkerColor({ category: { primary: 'unknown' } })).toBe('#D4A853');
     });
   });
 

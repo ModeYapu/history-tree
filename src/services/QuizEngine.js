@@ -34,6 +34,247 @@ class QuizEngine {
 
     static LOCATIONS = ['长安', '洛阳', '北京', '南京', '开封', '杭州', '成都'];
 
+    // 预设题目库
+    static PRESET_QUESTIONS = {
+        // 中国朝代题目
+        chinese_dynasties: [
+            {
+                type: 'multiple-choice',
+                question: '秦始皇统一六国是在哪一年？',
+                options: ['前221年', '前230年', '前206年', '前210年'],
+                correct: '前221年',
+                explanation: '秦始皇于前221年统一六国，建立了中国历史上第一个大一统王朝。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '汉朝的开国皇帝是？',
+                options: ['刘邦', '项羽', '刘彻', '刘备'],
+                correct: '刘邦',
+                explanation: '刘邦（汉高祖）于前202年建立汉朝，定都长安。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '唐朝盛世"贞观之治"的皇帝是？',
+                options: ['唐太宗', '唐高宗', '唐玄宗', '唐中宗'],
+                correct: '唐太宗',
+                explanation: '唐太宗李世民在位期间（626-649年）政治清明，经济繁荣，史称"贞观之治"。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '"丝绸之路"主要由哪位皇帝时期开通？',
+                options: ['汉武帝', '汉文帝', '汉景帝', '汉光武帝'],
+                correct: '汉武帝',
+                explanation: '汉武帝派张骞出使西域（前138年），开辟了连接中西方的丝绸之路。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '明朝的开国皇帝是？',
+                options: ['朱元璋', '朱棣', '朱允炆', '朱厚照'],
+                correct: '朱元璋',
+                explanation: '朱元璋（明太祖）于1368年建立明朝，定都南京。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '中国历史上唯一的女皇帝是？',
+                options: ['武则天', '吕后', '慈禧', '贾南风'],
+                correct: '武则天',
+                explanation: '武则天是中国历史上唯一的女皇帝，改国号为"周"（690-705年）。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '"开元盛世"出现在哪个朝代？',
+                options: ['唐朝', '宋朝', '明朝', '清朝'],
+                correct: '唐朝',
+                explanation: '唐玄宗李隆基在位前期（713-741年），国力达到顶峰，史称"开元盛世"。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '清朝的最后一个皇帝是？',
+                options: ['溥仪', '光绪', '同治', '咸丰'],
+                correct: '溥仪',
+                explanation: '溥仪（宣统帝）是清朝最后一位皇帝，1912年退位。'
+            },
+            {
+                type: 'timeline-order',
+                question: '请将以下朝代按时间顺序排列（从早到晚）：',
+                events: [
+                    { id: 'qin', name: '秦朝' },
+                    { id: 'han', name: '汉朝' },
+                    { id: 'tang', name: '唐朝' },
+                    { id: 'song', name: '宋朝' }
+                ],
+                correctOrder: ['qin', 'han', 'tang', 'song'],
+                explanation: '秦朝（前221-前207）→ 汉朝（前202-220）→ 唐朝（618-907）→ 宋朝（960-1279）'
+            },
+            {
+                type: 'true-false',
+                question: '三国时期包括魏、蜀、吴三个政权。',
+                correct: true,
+                explanation: '三国时期（220-280年）确实包括魏、蜀（蜀汉）、吴三个政权。'
+            },
+            {
+                type: 'true-false',
+                question: '宋朝是中国历史上疆域最大的朝代。',
+                correct: false,
+                explanation: '元朝和清朝的疆域都比宋朝大。宋朝虽然经济文化繁荣，但军事较弱。'
+            },
+            {
+                type: 'fill-blank',
+                question: '____是中国历史上第一个大一统的封建王朝。',
+                correct: '秦朝',
+                explanation: '秦始皇于前221年统一六国，建立了中国历史上第一个大一统王朝——秦朝。'
+            }
+        ],
+        // 世界文明题目
+        world_civilizations: [
+            {
+                type: 'multiple-choice',
+                question: '古埃及文明发源于哪条河流域？',
+                options: ['尼罗河', '底格里斯河', '印度河', '黄河'],
+                correct: '尼罗河',
+                explanation: '古埃及文明发源于非洲东北部的尼罗河流域。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '世界上最早的成文法典是？',
+                options: ['《汉谟拉比法典》', '《十二铜表法》', '《拿破仑法典》', '《查士丁尼法典》'],
+                correct: '《汉谟拉比法典》',
+                explanation: '古巴比伦国王汉谟拉比颁布的《汉谟拉比法典》是世界上最早的成文法典（约前1754年）。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '古希腊最著名的城邦民主制出现在？',
+                options: ['雅典', '斯巴达', '科林斯', '底比斯'],
+                correct: '雅典',
+                explanation: '雅典在公元前5世纪建立了世界上最早的民主制度。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '罗马帝国何时分裂为东西两部？',
+                options: ['395年', '27年', '476年', '800年'],
+                correct: '395年',
+                explanation: '罗马皇帝狄奥多西一世于395年将帝国分裂为东西两部。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '亚历山大大帝是哪国人？',
+                options: ['马其顿', '希腊', '波斯', '埃及'],
+                correct: '马其顿',
+                explanation: '亚历山大大帝是马其顿王国的国王，建立了横跨欧亚非的庞大帝国。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '《荷马史诗》包括《伊利亚特》和？',
+                options: ['《奥德赛》', '《埃涅阿斯纪》', '《神曲》', '《失乐园》'],
+                correct: '《奥德赛》',
+                explanation: '《荷马史诗》包括《伊利亚特》和《奥德赛》两部，是古希腊最重要的史诗作品。'
+            },
+            {
+                type: 'timeline-order',
+                question: '请将以下文明按出现时间排序（从早到晚）：',
+                events: [
+                    { id: 'mesopotamia', name: '美索不达米亚文明' },
+                    { id: 'egypt', name: '古埃及文明' },
+                    { id: 'greece', name: '古希腊文明' },
+                    { id: 'rome', name: '古罗马文明' }
+                ],
+                correctOrder: ['mesopotamia', 'egypt', 'greece', 'rome'],
+                explanation: '美索不达米亚（前4000年）→ 古埃及（前3100年）→ 古希腊（前800年）→ 古罗马（前753年）'
+            },
+            {
+                type: 'true-false',
+                question: '金字塔是古埃及的陵墓建筑。',
+                correct: true,
+                explanation: '金字塔是古埃及法老的陵墓，其中最著名的是吉萨金字塔群。'
+            },
+            {
+                type: 'true-false',
+                question: '斯巴达以其民主制度闻名于世。',
+                correct: false,
+                explanation: '斯巴达以军事寡头制度著称，民主制度是雅典的特色。'
+            },
+            {
+                type: 'fill-blank',
+                question: '____是古罗马最著名的圆形斗兽场，建于公元72-80年。',
+                correct: '罗马斗兽场',
+                explanation: '罗马斗兽场（Colosseum）是古罗马建筑的代表，可容纳5万观众。'
+            }
+        ],
+        // 中西对比题目
+        comparison: [
+            {
+                type: 'multiple-choice',
+                question: '孔子与苏格拉底大约生活在同一时代，他们的核心思想都是？',
+                options: ['伦理道德', '自然科学', '军事战略', '经济贸易'],
+                correct: '伦理道德',
+                explanation: '孔子强调"仁"和"礼"，苏格拉底追求"善"和"美德"，都关注伦理道德问题。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '中国的"四大发明"中，哪一项传入欧洲后促进了宗教改革？',
+                options: ['印刷术', '造纸术', '火药', '指南针'],
+                correct: '印刷术',
+                explanation: '印刷术传入欧洲后，使《圣经》得以大量印刷，促进了宗教改革的发展。'
+            },
+            {
+                type: 'true-false',
+                question: '汉朝和罗马帝国是同一时期存在的两大帝国。',
+                correct: true,
+                explanation: '汉朝（前202-220）与罗马帝国（前27-476）在1-2世纪同时存在，被称为"丝路两端"的两大帝国。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '以下哪项不是中国独有的发明？',
+                options: ['阿拉伯数字', '造纸术', '印刷术', '火药'],
+                correct: '阿拉伯数字',
+                explanation: '阿拉伯数字由古印度发明，经阿拉伯人传入欧洲。造纸术、印刷术、火药都是中国发明。'
+            }
+        ],
+        // 科技文化题目
+        technology_culture: [
+            {
+                type: 'multiple-choice',
+                question: '造纸术是由谁改进的？',
+                options: ['蔡伦', '毕昇', '张衡', '祖冲之'],
+                correct: '蔡伦',
+                explanation: '东汉蔡伦于105年改进了造纸术，使纸张得以广泛使用。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '活字印刷术的发明者是？',
+                options: ['毕昇', '蔡伦', '沈括', '王祯'],
+                correct: '毕昇',
+                explanation: '北宋毕昇发明了泥活字印刷术，大大提高了印刷效率。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '《本草纲目》的作者是？',
+                options: ['李时珍', '孙思邈', '华佗', '张仲景'],
+                correct: '李时珍',
+                explanation: '明代李时珍历时27年完成《本草纲目》，是中国古代药物学的集大成之作。'
+            },
+            {
+                type: 'multiple-choice',
+                question: '兵马俑是哪个朝代的陪葬品？',
+                options: ['秦朝', '汉朝', '唐朝', '明朝'],
+                correct: '秦朝',
+                explanation: '秦始皇兵马俑是秦始皇陵的陪葬品，建于前3世纪。'
+            },
+            {
+                type: 'true-false',
+                question: '中国古代的"四大发明"包括造纸术、印刷术、火药和指南针。',
+                correct: true,
+                explanation: '四大发明是中国古代对世界文明的重要贡献。'
+            },
+            {
+                type: 'fill-blank',
+                question: '____是中国古代最著名的军事著作，被誉为"兵学圣典"。',
+                correct: '《孙子兵法》',
+                explanation: '《孙子兵法》由春秋时期孙武所著，是世界军事史上最重要的著作之一。'
+            }
+        ]
+    };
+
     static STORAGE_KEY = 'historyTree_quizProgress';
     static MAX_HISTORY_SIZE = 20;
 
@@ -80,8 +321,156 @@ class QuizEngine {
             category = null,
             period = null,
             difficulty = 'medium',
-            count = 10
+            count = 10,
+            source = 'auto'
         } = options;
+
+        let questions = [];
+
+        // 如果指定使用预设题目
+        if (source !== 'data') {
+            // 尝试从预设题目中获取
+            const presetQuestions = this.getPresetQuestions(options);
+            if (presetQuestions.length >= count) {
+                questions = this.shuffle([...presetQuestions]).slice(0, count);
+                questions = questions.map((q, index) => ({
+                    ...q,
+                    index,
+                    userAnswer: null,
+                    isCorrect: null
+                }));
+            } else {
+                // 预设题目不足，补充生成题目
+                const remaining = count - questions.length;
+                const generatedQuestions = this.generateQuestionsFromData({
+                    type, category, period, difficulty, count: remaining
+                });
+                questions = [...questions, ...generatedQuestions];
+            }
+        }
+
+        // 如果题目仍然不足，从数据生成
+        if (questions.length < count) {
+            const remaining = count - questions.length;
+            const generatedQuestions = this.generateQuestionsFromData({
+                type, category, period, difficulty, count: remaining
+            });
+            questions = [...questions, ...generatedQuestions];
+        }
+
+        // 创建测验
+        this.currentQuiz = {
+            id: 'quiz_' + Date.now(),
+            questions,
+            currentIndex: 0,
+            score: 0,
+            startTime: Date.now(),
+            answers: {},
+            options: { category, period, difficulty, source }
+        };
+
+        return this.currentQuiz;
+    }
+
+    /**
+     * 获取预设题目
+     */
+    getPresetQuestions(options) {
+        const { category, period, topic } = options;
+        let questions = [];
+
+        // 根据主题选择题目集
+        if (topic === 'chinese' || period?.includes('秦') || period?.includes('汉') || period?.includes('唐') || period?.includes('宋') || period?.includes('明') || period?.includes('清')) {
+            questions = [...QuizEngine.PRESET_QUESTIONS.chinese_dynasties];
+        } else if (topic === 'world' || topic === 'civilization') {
+            questions = [...QuizEngine.PRESET_QUESTIONS.world_civilizations];
+        } else if (topic === 'comparison') {
+            questions = [...QuizEngine.PRESET_QUESTIONS.comparison];
+        } else if (category === 'technology' || category === 'culture') {
+            questions = [...QuizEngine.PRESET_QUESTIONS.technology_culture];
+        } else {
+            // 没有特定主题时，混合所有题目
+            questions = [
+                ...QuizEngine.PRESET_QUESTIONS.chinese_dynasties,
+                ...QuizEngine.PRESET_QUESTIONS.world_civilizations,
+                ...QuizEngine.PRESET_QUESTIONS.comparison,
+                ...QuizEngine.PRESET_QUESTIONS.technology_culture
+            ];
+        }
+
+        // 过滤题目类型
+        if (options.type) {
+            questions = questions.filter(q => q.type === options.type);
+        }
+
+        return questions;
+    }
+
+    /**
+     * 获取可用的题目集列表
+     */
+    getAvailableQuizSets() {
+        return [
+            {
+                id: 'chinese',
+                name: '中国朝代',
+                description: '中国古代各朝代的历史事件和人物',
+                icon: '🏯',
+                count: QuizEngine.PRESET_QUESTIONS.chinese_dynasties.length,
+                topics: ['秦朝', '汉朝', '唐朝', '宋朝', '明朝', '清朝', '三国']
+            },
+            {
+                id: 'world',
+                name: '世界文明',
+                description: '世界古代文明的历史知识',
+                icon: '🌍',
+                count: QuizEngine.PRESET_QUESTIONS.world_civilizations.length,
+                topics: ['古埃及', '古希腊', '古罗马', '美索不达米亚']
+            },
+            {
+                id: 'comparison',
+                name: '中西对比',
+                description: '中国与西方历史的对比分析',
+                icon: '🔄',
+                count: QuizEngine.PRESET_QUESTIONS.comparison.length,
+                topics: ['孔子vs苏格拉底', '汉朝vs罗马', '四大发明']
+            },
+            {
+                id: 'technology',
+                name: '科技文化',
+                description: '中国古代科技与文化成就',
+                icon: '📚',
+                count: QuizEngine.PRESET_QUESTIONS.technology_culture.length,
+                topics: ['四大发明', '医学', '建筑', '兵法']
+            }
+        ];
+    }
+
+    /**
+     * 快速开始指定主题的测验
+     */
+    quickStart(topicId, count = 10) {
+        const topicMap = {
+            'chinese': 'chinese',
+            'world': 'world',
+            'comparison': 'comparison',
+            'technology': 'technology_culture'
+        };
+
+        const topic = topicMap[topicId] || 'chinese';
+
+        return this.generateQuiz({
+            source: 'preset',
+            topic,
+            count
+        });
+    }
+
+    /**
+     * 从数据生成题目
+     */
+    generateQuestionsFromData(options) {
+        const { type, category, period, difficulty, count } = options;
 
         // 获取符合条件的节点
         const nodes = this.getEligibleNodes({ category, period, count: count * 3 });
@@ -94,23 +483,10 @@ class QuizEngine {
         const selectedNodes = this.shuffle(nodes).slice(0, Math.min(count, nodes.length));
 
         // 生成问题
-        const questions = selectedNodes.map((node, index) => {
+        return selectedNodes.map((node, index) => {
             const questionType = type || this.selectQuestionType(difficulty);
             return this.createQuestion(node, questionType, index);
         });
-
-        // 创建测验
-        this.currentQuiz = {
-            id: 'quiz_' + Date.now(),
-            questions,
-            currentIndex: 0,
-            score: 0,
-            startTime: Date.now(),
-            answers: {},
-            options: { category, period, difficulty }
-        };
-
-        return this.currentQuiz;
     }
 
     /**

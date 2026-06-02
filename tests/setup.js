@@ -1,6 +1,9 @@
 // Jest DOM 测试设置
 // 使用require而不是import以避免ES模块问题
 
+const path = require('path');
+const fs = require('fs');
+
 try {
   require('@testing-library/jest-dom');
 } catch (e) {
@@ -46,6 +49,29 @@ global.L = {
     setLatLng: jest.fn(),
     getLatLng: jest.fn()
   })),
+  divIcon: jest.fn(() => ({ options: {} })),
+  icon: jest.fn(() => ({ options: {} })),
+  marker: jest.fn(() => ({
+    addTo: jest.fn(),
+    bindPopup: jest.fn(),
+    on: jest.fn(),
+    setIcon: jest.fn(),
+    remove: jest.fn(),
+    getPopup: jest.fn()
+  })),
+  layerGroup: jest.fn(() => ({
+    addTo: jest.fn(),
+    addLayer: jest.fn(),
+    removeLayer: jest.fn(),
+    clearLayers: jest.fn(),
+    eachLayer: jest.fn()
+  })),
+  popup: jest.fn(() => ({
+    setLatLng: jest.fn(),
+    setContent: jest.fn(),
+    openOn: jest.fn(),
+    addTo: jest.fn()
+  })),
   control: {
     zoom: jest.fn(() => ({ addTo: jest.fn() })),
     scale: jest.fn(() => ({ addTo: jest.fn() }))
@@ -59,6 +85,20 @@ try { require('../src/views/NetworkView.js'); } catch (e) { console.warn('Failed
 try { require('../src/services/QuizEngine.js'); } catch (e) { console.warn('Failed to load QuizEngine:', e.message); }
 try { require('../src/plugins/TimelinePlugin.js'); } catch (e) { console.warn('Failed to load TimelinePlugin:', e.message); }
 try { require('../src/plugins/CollectionPlugin.js'); } catch (e) { console.warn('Failed to load CollectionPlugin:', e.message); }
+
+// 读取并执行 SearchEngine
+const searchEnginePath = path.resolve(__dirname, '../src/services/SearchEngine.js');
+if (fs.existsSync(searchEnginePath)) {
+  const searchEngineCode = fs.readFileSync(searchEnginePath, 'utf-8');
+  eval(searchEngineCode);
+}
+
+// 读取并执行 EventRelations
+const eventRelationsPath = path.resolve(__dirname, '../src/services/EventRelations.js');
+if (fs.existsSync(eventRelationsPath)) {
+  const eventRelationsCode = fs.readFileSync(eventRelationsPath, 'utf-8');
+  eval(eventRelationsCode);
+}
 
 // Mock D3.js
 global.d3 = {
