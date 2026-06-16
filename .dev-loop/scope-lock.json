@@ -1,0 +1,19 @@
+{
+  "master": "History Tree - 交互式历史可视化平台",
+  "milestones": [
+    "M1: UI/UX 打磨 — 清理冗余文件、统一设计语言、移动端适配",
+    "M2: 数据层增强 — 扩充历史数据集、优化加载性能",
+    "M3: AI 功能激活 — 接入可用 LLM API、实现智能问答",
+    "M4: 3D 可视化完善 — Three.js 历史树3D视图优化",
+    "M5: 部署上线 — nginx 部署、SEO、性能优化"
+  ],
+  "currentMilestone": "M1",
+  "currentSubScope": "清理冗余文件 + 核心功能验证",
+  "outOfScope": [
+    "重写为 React/Vue（保持原生 JS）",
+    "新增 MCP server（现有先搁置）",
+    "付费功能/用户系统"
+  ],
+  "lockedAt": "2026-06-16T23:15:00+08:00",
+  "lockedBy": "R001"
+}

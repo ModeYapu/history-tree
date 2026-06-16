@@ -1,0 +1,29 @@
+{
+  "projectType": "frontend",
+  "language": "javascript",
+  "buildCmd": "echo 'static project, no build'",
+  "testCmd": "npx jest --passWithNoTests 2>&1 | tail -5",
+  "vetCmd": "echo 'no linter configured'",
+  "sliceTestPattern": "",
+  "reviewInterval": 3,
+  "regressionInterval": 5,
+  "parallelMax": 2,
+  "hooks": {
+    "onSuccess": ["commit"],
+    "deployCmd": ""
+  },
+  "scoring": {
+    "testWeight": 20,
+    "reviewWeight": 20,
+    "coverageRatio": 0.2
+  },
+  "tuning": {
+    "claudeTimeout": 600,
+    "maxRetries": 2,
+    "autoPush": true,
+    "autoDeploy": false,
+    "stopOnScoreBelow": 60,
+    "notifyOnScoreBelow": 80
+  },
+  "active": true
+}
